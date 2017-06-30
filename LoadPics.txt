@@ -1,0 +1,171 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace LoadPics
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+        }
+
+        private void Populate()
+        {
+            int j = 0;
+            int index_start = 0, index_skip = 0;
+        startpoint:
+            lv.View = View.Details;
+        string[] image_files = Directory.GetFiles(@"E:\karthik\Photos\dada_farewell", "*.jpg");
+            ImageList imageList1 = new ImageList();
+            imageList1.ImageSize = new Size(56, 56);
+
+            for (j = index_start; j < image_files.Length; j++)
+            {
+                Image img = null;
+                try
+                {
+                    img = Image.FromFile(image_files[j]);
+                }
+                catch (Exception)
+                {
+                    index_start = index_start + index_skip;
+                    index_skip++;
+                    goto startpoint;
+                }
+                if (img != null)
+                    imageList1.Images.Add(img);
+                lv.SmallImageList = imageList1;
+                lv.Items.Add("Image : " + j, j);
+            }
+        }
+
+        private delegate void d_parallel(int j, ImageList imageList1, Image img);
+        private void ParallelMethod_Populate_Threading(int j, ImageList imageList1, Image img)
+        {
+            if (img != null)
+                imageList1.Images.Add(img);
+            this.lv.SmallImageList = imageList1;
+            this.lv.Items.Add("Image : " + j, j);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+          Populate_Images_Threading();
+          //Populate_Threading();
+          //Populate();
+          //Populate_Images();
+        }
+
+        private void Populate_Threading()
+        {
+            int index_start = 0, index_skip = 0;
+            lv.View = View.Details;
+            string[] image_files = Directory.GetFiles(@"C:\Users\kltadiko\Pictures\Sample Pictures", "*.jpg");
+
+            Parallel.For(index_start, image_files.Length, (j) =>
+            {
+            startpoint:
+                Image img = null;
+                ImageList imageList1 = new ImageList();
+                imageList1.ImageSize = new Size(56, 56);
+                try
+                {
+                    img = Image.FromFile(image_files[j]);
+                }
+                catch (Exception)
+                {
+                    index_start = index_start + index_skip;
+                    index_skip++;
+                    goto startpoint;
+                }
+                d_parallel odp = new d_parallel(ParallelMethod_Populate_Threading);
+                Invoke(odp, j, imageList1, img);
+            });
+        }
+
+        private void Populate_Images_Threading()
+        {
+            ImageList image_list_gallery = new ImageList();
+            image_list_gallery.ImageSize = new Size(96, 64);
+            image_list_gallery.ColorDepth = ColorDepth.Depth32Bit;
+            list_view_Gallery.View = View.LargeIcon;
+            Task t1 = Task.Run(() =>
+            {
+                string[] GalleryArray = System.IO.Directory.GetFiles(@"E:\karthik\Photos\phone_pics", "*.jpg");
+
+                Parallel.For(0, GalleryArray.Length, (i) =>
+                {
+                    var tempImage = Image.FromFile(GalleryArray[i]); //Load the image from directory location
+                    Bitmap pic = new Bitmap(96, 64);
+                    using (Graphics g = Graphics.FromImage(pic))
+                    {
+                        g.DrawImage(tempImage, new Rectangle(0, 0, pic.Width, pic.Height)); //redraw smaller image
+                    }
+                    image_list_gallery.Images.Add(pic);    //add new image to imageList
+                    tempImage.Dispose();    //after adding to the list, dispose image out of memory
+                });
+            }).ContinueWith((x) =>
+            {
+                try
+                {
+                    list_view_Gallery.LargeImageList = image_list_gallery;    //set imageList to listView
+                    for (int i = 0; i < image_list_gallery.Images.Count; i++)
+                    {
+                        ListViewItem item = new ListViewItem();
+                        item.ImageIndex = i;
+                        list_view_Gallery.Items.Add(item); //add images in sequential order
+                    }
+                }
+                catch (Exception){}
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void Populate_Images()
+        {
+            ImageList galleryList = new ImageList();
+
+            string[] GalleryArray = System.IO.Directory.GetFiles(@"C:\Users\Public\Pictures\Sample Pictures", "*.jpg");    //create array of files in directory
+            galleryList.ImageSize = new Size(96, 64);
+            galleryList.ColorDepth = ColorDepth.Depth32Bit;
+
+            for (int i = 0; i < GalleryArray.Length; i++)
+            {
+                if (GalleryArray[i].Contains(".jpg"))   //test if the file is an image
+                {
+                    var tempImage = Image.FromFile(GalleryArray[i]); //Load the image from directory location
+                    Bitmap pic = new Bitmap(96, 64);
+                    using (Graphics g = Graphics.FromImage(pic))
+                    {
+                        g.DrawImage(tempImage, new Rectangle(0, 0, pic.Width, pic.Height)); //redraw smaller image
+                    }
+                    galleryList.Images.Add(pic);    //add new image to imageList
+                    tempImage.Dispose();    //after adding to the list, dispose image out of memory
+                }
+
+            }
+            list_view_Gallery.View = View.LargeIcon;
+            list_view_Gallery.LargeImageList = galleryList;    //set imageList to listView
+
+            for (int i = 0; i < galleryList.Images.Count; i++)
+            {
+                ListViewItem item = new ListViewItem();
+                item.ImageIndex = i;
+                list_view_Gallery.Items.Add(item); //add images in sequential order
+            }
+        }
+    }
+}

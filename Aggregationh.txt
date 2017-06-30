@@ -1,0 +1,56 @@
+using namespace std;
+#include <iostream>
+#include <string>
+
+class Agg_Point2D
+{
+public:
+	Agg_Point2D() : x{ 0 }, y{ 0 }{};
+	Agg_Point2D(int a, int b) : x{ a }, y{ b }{};
+
+	friend std::ostream & operator<<(ostream &out, const Agg_Point2D &p)
+	{
+		out << "X : " << p.GetX() << " and Y : " << p.GetY();
+		return out;
+	}
+	void set_point(int a, int b)
+	{
+		this->x = a;
+		this->y = b;
+	}
+
+	int GetX() const { return x; }
+	int GetY() const { return y; }
+	~Agg_Point2D()
+	{
+		cout << "\nAgg_Point2D is destroyed\n";
+	}
+
+private:
+	int x, y;
+};
+
+class Agg_Oject
+{
+public:
+	Agg_Oject() = delete;
+	Agg_Oject(string N, Agg_Point2D &objPoint) : name(N), obj_point{ objPoint }{};
+
+	friend std::ostream & operator<<(ostream &out, const Agg_Oject &oject)
+	{
+		out << "\nName is : " << oject.name << " and its location : " << oject.obj_point;
+		return out;
+	}
+	void move_to(int x, int y)
+	{
+		obj_point.set_point(x, y);
+	}
+
+	~Agg_Oject()
+	{
+		cout << "\nAgg_Oject is destroyed\n";
+	}
+private:
+	string name;
+	Agg_Point2D obj_point;
+};

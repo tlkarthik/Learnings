@@ -1,0 +1,72 @@
+// MemGranSharedMem2.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "2DynMem.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+
+#include <windows.h>
+#include <stdio.h>
+#include <conio.h>
+#include <tchar.h>
+#pragma comment(lib, "user32.lib")
+
+#include <ppl.h>
+using namespace Concurrency;
+#include  <vector>
+#include  <string>
+#include  <map>
+
+struct t { int a; };
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+
+		HANDLE hMapFile_size = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, _T("Local\\UniqueLinkagesBufferSize"));
+		__int64* pBuf_size = reinterpret_cast<__int64*>( MapViewOfFile(hMapFile_size, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(__int64)));
+
+		__int64 cv = *pBuf_size;
+
+	//HANDLE hMessageEmptiedEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageEmptied"));
+	//HANDLE hMessageSentEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageSent"));
+	//do
+	//{
+	//	WaitForSingleObject(hMessageSentEvent, INFINITE);
+
+	//	HANDLE hMapFile_size = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, _T("Local\\UniqueLinkagesBufferSize"));
+	//	CString pBuf_size = (LPTSTR)MapViewOfFile(hMapFile_size, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(long));
+
+	//	HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, _T("Local\\MyFileMappingObject_"));
+	//	CString pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, stol(pBuf_size.GetBuffer()));
+
+	//	map<CString, CString>m_map_oldLinkage_NewLinkageIDs;
+	//	m_map_oldLinkage_NewLinkageIDs.size();
+	//	int pos = 0;
+	//	CString token = pBuf.Tokenize(_T("/"), pos);
+	//	while (!token.IsEmpty()){
+	//		int iEqual_pos = 0;
+	//		CString csDMRS_id = token.Tokenize(_T("="), iEqual_pos).Trim();
+	//		m_map_oldLinkage_NewLinkageIDs[csDMRS_id] = token.Mid(iEqual_pos).Trim();
+	//		token = pBuf.Tokenize(_T("/"), pos);
+	//	}
+
+	//	//MessageBox(NULL, pBuf, TEXT("Process2"), MB_OK);
+
+	//	SetEvent(hMessageEmptiedEvent);
+	//	UnmapViewOfFile(pBuf);
+	//	CloseHandle(hMapFile);
+	//	break;
+	//} while (true);
+
+	return 0;
+}
+

@@ -1,0 +1,132 @@
+// MemGranSharedMem1.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "MemGranSharedMem1.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+#include <vector>
+#include <set>
+#include <algorithm>
+#include <tuple>
+#include <Windows.h>
+#include <unordered_map>
+// The one and only application object
+#include <map>
+CWinApp theApp;
+
+using namespace std;
+
+#include <stdio.h>
+#include <conio.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
+//#define BUF_SIZE 800000
+
+#define FILE_MAP_START 1111
+
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	
+
+	ifstream STt("tlk_Notes_vis - Copy.txt");
+	//ifstream STt("tlk_Notes_vishalf.txt");
+	wstring str;
+	
+	STt.seekg(0, ios::end);
+	str.reserve(static_cast<unsigned int>( STt.tellg()));
+	STt.seekg(0, ios::beg);
+
+	str.assign((istreambuf_iterator<char>(STt)), istreambuf_iterator<char>());
+
+	//int len = str.length();
+	//CString t_s{ str.c_str(), len };
+	//map<CString, CString>m_map_oldLinkage_NewLinkageIDs;
+	//int pos = 0;
+	//CString token = t_s.Tokenize(_T("/"), pos);
+	//while (!token.IsEmpty()){
+	//	int iEqual_pos = 0;
+	//	CString csDMRS_id = token.Tokenize(_T("="), iEqual_pos).Trim();
+	//	m_map_oldLinkage_NewLinkageIDs[csDMRS_id] = token.Mid(iEqual_pos).Trim();
+	//	token = t_s.Tokenize(_T("/"), pos);
+	//}
+
+	//auto siz = m_map_oldLinkage_NewLinkageIDs.size();
+	//wstring buffer ;
+
+	HANDLE hMessageEmptiedEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageEmptied"));
+	//HANDLE hMessageSentEvent = CreateEvent(NULL, FALSE, TRUE, _T("MessageSent"));
+	HANDLE hMultipleMessagesSent = CreateEvent(NULL, FALSE, TRUE, _T("MultipleMessagesSent"));
+	vector<HANDLE>v_hMapFile{};
+
+	int prev{ 0 }, next{ 1 };
+	for (;;){
+		auto BUF_SIZE = 2 * str.size();
+		wstring wMapName = L"Local\\MyFileMappingObject_" + to_wstring(next);
+		HANDLE hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, BUF_SIZE, wMapName.data());
+		v_hMapFile.emplace_back(move(hMapFile));
+		LPCTSTR pBuf = (LPTSTR)MapViewOfFile(v_hMapFile[next-1], FILE_MAP_ALL_ACCESS, 0, 0, BUF_SIZE);
+		
+		// if (str.substr(prev).length()<2047){
+		//	wstring a = str.substr(prev);
+		//	CopyMemory((PVOID)pBuf, a.data(), a.size() * sizeof(TCHAR));
+		//	break;
+		//}
+
+		//wstring copy_chunk = str.substr(prev, 2047);
+		//auto found = copy_chunk.rfind(L"/");
+		//
+		//if (found != std::wstring::npos){
+		//	copy_chunk = copy_chunk.substr(0, found + 1);
+		//	prev = prev + found + 1;
+		//}
+		//else
+		//	prev = prev + 2047;
+
+		//next++;
+
+		//CopyMemory((PVOID)pBuf, copy_chunk.data(), copy_chunk.size() * sizeof(TCHAR));
+		CopyMemory((PVOID)pBuf, str.data(), str.size() * sizeof(TCHAR));
+		UnmapViewOfFile(pBuf);
+	} 
+
+	SetEvent(hMultipleMessagesSent);
+	WaitForSingleObject(hMessageEmptiedEvent, INFINITE);
+	for (const auto& itr : v_hMapFile)
+		CloseHandle(itr);
+	
+	
+
+
+
+	
+	//TCHAR * lpcTheFile = TEXT("tlk_Notes_vis - Copy.txt");
+	//HANDLE hFile = CreateFile(lpcTheFile,GENERIC_READ | GENERIC_WRITE,	0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,	NULL);
+	//SYSTEM_INFO SysInfo;
+	//GetSystemInfo(&SysInfo);
+	//DWORD dwSysGran = SysInfo.dwAllocationGranularity;
+	//DWORD dwFileMapStart = (FILE_MAP_START / dwSysGran) * dwSysGran;
+	//DWORD dwMapViewSize = (FILE_MAP_START % dwSysGran) + BUF_SIZE;
+	//DWORD dwFileMapSize = FILE_MAP_START + BUF_SIZE;
+	//int iViewDelta = FILE_MAP_START - dwFileMapStart;
+	//DWORD dBytesWritten;
+	//for (int i = 0; i<(int)dwSysGran; i++)
+	//	WriteFile(hFile, &i, sizeof(i), &dBytesWritten, NULL);
+	//DWORD dwFileSize = GetFileSize(hFile, NULL);
+	//_tprintf(TEXT("hFile size: %10d\n"), dwFileSize);
+	//HANDLE hMapFile = CreateFileMapping(hFile, NULL, PAGE_READWRITE, 0, dwFileMapSize, szName.GetBuffer());
+	//LPCTSTR pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, dwFileMapStart, dwMapViewSize);
+	//CopyMemory((PVOID)pBuf, t_s, t_s.GetLength()*sizeof(TCHAR));
+	//SetEvent(hMessageSentEvent);
+	//WaitForSingleObject(hMessageEmptiedEvent, INFINITE);
+	//UnmapViewOfFile(pBuf);
+	//CloseHandle(hMapFile);
+
+	return 0;
+}

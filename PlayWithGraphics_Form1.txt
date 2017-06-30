@@ -1,0 +1,136 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace PlayWithGraphics
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        Graphics g;
+        public int scroll_x { get; set; }
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            scroll_x = 1;
+        }
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            int x = e.X;
+            int y = e.Y;
+            textBox1.Text = "x : " + x +", y : "+y;
+            g = this.CreateGraphics();
+            Brush brush = Brushes.Brown;
+            Pen pen = new Pen(Brushes.LimeGreen);
+            List<Brush> brushes_list = new List<Brush>();
+            brushes_list.Add(Brushes.Brown);
+            brushes_list.Add(Brushes.AliceBlue);
+            brushes_list.Add(Brushes.Azure);
+            brushes_list.Add(Brushes.Black);
+            brushes_list.Add(Brushes.Blue);
+            brushes_list.Add(Brushes.Brown);
+            brushes_list.Add(Brushes.Red);
+            brushes_list.Add(Brushes.PowderBlue);
+            brushes_list.Add(Brushes.Green);
+            brushes_list.Add(Brushes.Yellow);
+            brushes_list.Add(Brushes.Teal);
+            brushes_list.Add(Brushes.Sienna);
+            brushes_list.Add(Brushes.OrangeRed);
+
+            Task t1 = Task.Run(() => 
+                {
+                    foreach (var item in brushes_list)
+                    {
+                        pen = new Pen(item);
+                    }
+                }
+                );
+            Task<int> t2 = Task.Run(() =>
+                {
+                    if (Math.Abs(scroll_x * x) > this.Width || Math.Abs(scroll_x * y) > this.Height)
+                    {
+                        double d1 = ((scroll_x * x) - this.Width);
+                        double d2 = (scroll_x * x);
+                        float scale_x = (float)(d1 / d2);
+
+                        double d3 = ((scroll_x * y) - this.Height);
+                        double d4 = (scroll_x * y);
+                        float scale_y = (float)(d3 / d4);
+                    scallling:
+                        try
+                        {
+                             g.ScaleTransform((scale_x), (scale_y));
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex.Message.Contains("An exception of type 'System.ArgumentException' occurred in System.Drawing.dll but was not handled in user code"));
+                            {
+                                scale_x = 0.2F;
+                                scale_y = 0.2F;
+                                goto scallling;
+                            }
+                        }
+                    }
+                    //This is the example to call MT from worker thread. 
+                    //Thread demoThread = new Thread(new ParameterizedThreadStart(this.ThreadProcSafe));
+                    if (scroll_x > 0)
+                        g.DrawEllipse(pen, x, y, scroll_x * x, scroll_x * y);
+                    else
+                        g.DrawEllipse(pen, x, y, x / scroll_x, y / scroll_x);
+
+                    return scroll_x;
+                }).ContinueWith((i)=>{textBox2.Text = i.Result.ToString(); return 2; },TaskScheduler.FromCurrentSynchronizationContext()) ;
+        }
+
+        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                g.Clear(Color.Blue);
+                scroll_x = 1;
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            g.Dispose();
+        }
+
+        private void panel1_MouseWheel(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            // Update the drawing based upon the mouse wheel scrolling.
+             scroll_x =scroll_x+ e.Delta * SystemInformation.MouseWheelScrollLines / 120;
+        }
+
+        //private delegate void setmethod(string s);
+        //private void SetText(string text)
+        //{
+        //    // InvokeRequired required compares the thread ID of the
+        //    // calling thread to the thread ID of the creating thread.
+        //    // If these threads are different, it returns true.
+        //    if (this.textBox2.InvokeRequired)
+        //    {
+        //        setmethod d = new setmethod(SetText);
+        //        this.Invoke(d, new object[] { text });
+        //    }
+        //    else
+        //    {
+        //        this.textBox2.Text = text;
+        //    }
+        //}
+        //private void ThreadProcSafe(object p)
+        //{
+        //    this.SetText(p.ToString());
+        //}
+    }
+}

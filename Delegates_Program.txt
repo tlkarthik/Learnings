@@ -1,0 +1,109 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Delegates
+{
+   public class DelegateRealTimeExampl
+    {
+       //Deleagte is the representative to communicate b/w parties
+        //Here two classes aree parties
+        public delegate void longrunprocess(int i); //must have a same signature of the method
+
+        public void LongRunningPgm(longrunprocess d)
+        {
+            for (int i = 0; i < 1000000000; i++)
+            {
+                d(i);
+                ///do junk
+            }
+        }
+    }
+    class Program
+    {
+        public delegate double normal_delegate (int num);
+        static normal_delegate d1 = m1;
+        private static int i = 0;
+
+       static  void delegateMethod(int i)
+        {
+            Console.WriteLine(i );
+        }
+
+        static void Main(string[] args)
+        {
+
+            //Real time use of delegates
+            //wants to get notifies what nmbr is running.
+           // //Here delegartes are used
+          //  longrunprocess lgp =new longrunprocess(delegateMethod);
+
+            DelegateRealTimeExampl obj = new DelegateRealTimeExampl();
+            obj.LongRunningPgm(delegateMethod);
+
+            int o = 1;
+            d1.Invoke(o);
+            normal_delegate d2, d3, d4;
+            double d = m1(0);
+            d2 = new normal_delegate(m2);
+            d2(2);
+            d3 = d2 + new normal_delegate(m3);
+            d3.Invoke(3); 
+
+            d4 = d1 + d2-d3;
+
+            Console.WriteLine("d4 : "+i);
+
+            //Generic delegates
+           //Func, predicate and Action type delegates
+            //Func has inputs/return arhuments
+            //Predicate has booliean return type only
+            //Action simply does the action
+            //<Max input parameters for all the above is 16. except predicate.ity is only one
+
+            //Fucn
+            Func<int, double> f_del = (s) =>  s * 5.5;
+            Console.WriteLine("Func : " + f_del(10));
+
+            //Action
+            Action<int, string> a_del = (a, s) => 
+            {
+                a *= 3;
+                Console.WriteLine("Action_del : " + a.ToString() + " " + s);
+            };
+
+            a_del(25,"tlk");
+
+            //Predicate
+            Predicate<int> p_del = (v) =>
+                { 
+                    return (v == 2) ? true : false;
+                };
+
+            Console.WriteLine("Predicate : "+p_del(2));
+            Console.WriteLine("Predicate : " + p_del(20));
+            Console.ReadKey();
+        }
+
+        private static double m1(int p)
+        {
+            i=i + p;
+            Console.WriteLine(i + " : m1\n");
+            return p;
+        }
+        private static double m2(int p)
+        {
+            i = i + p;
+            Console.WriteLine(i + " : m2\n");
+            return p;
+        }
+        private static double m3(int p)
+        {
+            i = i + p;
+            Console.WriteLine(i + " : m3\n");
+            return p;
+        }
+    }
+}

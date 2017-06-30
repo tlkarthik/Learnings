@@ -1,0 +1,50 @@
+// TimeStamp.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "TimeStamp.h"
+#include <chrono>
+#include <iostream>
+#include <ctime>
+#include <time.h>
+#include <string>
+#include <stdio.h>
+#include <iomanip>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+using namespace std::chrono;
+
+const std::string currentDateTime() {
+	time_t     now = time(0);
+	struct tm  tstruct;
+	char       buf[80];
+	tstruct = *localtime(&now);
+	strftime(buf, sizeof(buf), "%X", &tstruct);
+
+	return buf;
+}
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	int nRetCode = 0;
+
+	CTime t = CTime::GetCurrentTime();
+	//this formats how do you want to appear in the string, e.g. 10:30:05
+	auto strTime = t.Format("{%H:%M:%S} ");
+
+	/*auto t = std::time(nullptr);
+	auto tm = *std::localtime(&t);
+	auto time  = put_time(&tm, "%H-%M-%S") ;*/
+
+
+	return nRetCode;
+}

@@ -1,0 +1,228 @@
+// PPL.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "PPL.h"
+#include "array"
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <algorithm>
+#include <numeric>
+#include <iostream>
+#include <ppl.h>
+#include <string>
+#include <regex>
+#include <concurrent_vector.h>
+#include <concurrent_unordered_map.h>
+
+#include <stdio.h>
+#include <conio.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
+#include <thread>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+using namespace concurrency;
+
+
+// Determines whether the input value is prime.
+bool is_prime(int n)
+{
+	if (n < 2)
+		return false;
+	for (int i = 2; i < n; ++i)
+	{
+		if ((n % i) == 0)
+			return false;
+	}
+	return true;
+}
+
+
+template <class Function>
+__int64 time_call(Function&& f)
+{
+	__int64 bbegin = GetTickCount();
+	f();
+	return GetTickCount() - bbegin;
+}
+
+
+inline std::string& trim(std::string& str)
+{
+	str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
+	str.erase(str.find_last_not_of(' ') + 1);         //surfixing spaces
+	return str;
+}
+struct StringHasher {
+	size_t operator()(const CString& s) const {
+		return stdext::hash_value((LPCTSTR)s);
+	}
+};
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	map<CString, CString>map2;
+	ifstream STt("tlk_Notes_vis - Copy.txt");
+	string str/* = "12345678910 = 11121314/151617181920 = 212223/24252627282930 = 313233/343536373839 = 404142/"
+		"434445464748 = 4950515253/232216868671324161 = 20351/1081426877702340609 = 11804/32132=11/"*/;
+	
+	regex dellimit_slash("[/]");
+	STt.seekg(0, ios::end);
+	str.reserve(static_cast<unsigned int>(STt.tellg()));
+	STt.seekg(0, ios::beg);
+
+	str.assign((istreambuf_iterator<char>(STt)), istreambuf_iterator<char>());
+
+	string s2 = move(str);
+	//std::sregex_token_iterator end1, end2, end3;
+
+#pragma region worstperf
+	//_int64 elapsed1 = time_call([&]{
+	//	sregex_token_iterator iter1(s1.begin(), s1.end(), dellimit_slash, -1);
+	//	for_each(iter1, end1, [&](const std::sub_match<std::_String_const_iterator<std::_String_val<std::_Simple_types<char>>>> &val){
+	//		string  _val = move(val.str());
+	//		size_t  equal_pos = _val.find("=");
+	//		map1.insert(make_pair(move((_val.substr(0, equal_pos))), move((_val.substr(equal_pos + 1)))));
+	//	});
+	//});
+	//_int64 elapsed3 = time_call([&]{
+	//	sregex_token_iterator iter3(s3.begin(), s3.end(), dellimit_slash, -1);
+	//	while (iter3 != end3)  {
+	//		string  _val = move(*iter3);
+	//		size_t  equal_pos = _val.find("=");
+	//		map3.insert(make_pair(move((_val.substr(0, equal_pos))), move((_val.substr(equal_pos + 1)))));
+	//		++iter3;
+	//	}
+	//});
+#pragma endregion
+	
+
+	auto t = thread::hardware_concurrency();
+	unsigned int parts = s2.length()/(t) ;
+	size_t prev_slash_pos{};
+	vector<string>v_parts;
+	map<CString, CString>map{};
+	for (unsigned int i = 1; i <= t; i++)
+	{
+		if (prev_slash_pos <s2.length())
+		{
+			string	p1 = move(s2.substr(prev_slash_pos, prev_slash_pos + parts));
+			size_t current_slash = p1.rfind("/");
+			if ((p1.find("=") != string::npos) && (current_slash != string::npos))
+			{
+				v_parts.emplace_back(move(p1.substr(0, current_slash)));
+				prev_slash_pos = prev_slash_pos + current_slash + 1;
+			}
+			else
+			{
+				size_t next_slash_pos = s2.find("/", prev_slash_pos);
+				if (next_slash_pos != string::npos)
+				{
+					v_parts.emplace_back(move(s2.substr(prev_slash_pos, prev_slash_pos + next_slash_pos)));
+					prev_slash_pos = prev_slash_pos + next_slash_pos+1;
+				}
+				else
+					break;
+			}
+		}
+		else
+		{
+			if (s2.rfind("/") != string::npos)
+				v_parts.emplace_back(move(s2.substr(prev_slash_pos, s2.substr(prev_slash_pos).length() - 1)));
+
+			break;
+		}
+	}
+	parallel_for_each(begin(v_parts), end(v_parts), [&](string &in){
+		CString pBuf{ in.c_str() };
+			int pos = 0;
+			CString token = pBuf.Tokenize(_T("/"), pos);
+			while (!token.IsEmpty()){
+				int iEqual_pos = 0;
+				map.insert(make_pair((token.Tokenize(_T("="), iEqual_pos).Trim()), (token.Mid(iEqual_pos).Trim()))); //oldDMRS vs NewGlobalID
+				token = pBuf.Tokenize(_T("/"), pos);
+			}
+	});
+
+	//_int64 elapsed2 = time_call([&]{
+	//	CString pBuf{ str.c_str() };
+	//	int pos = 0;
+	//	CString token = pBuf.Tokenize(_T("/"), pos);
+	//	while (!token.IsEmpty()){
+	//		int iEqual_pos = 0;
+	//		map2.insert(make_pair((token.Tokenize(_T("="), iEqual_pos).Trim()), (token.Mid(iEqual_pos).Trim()))); //oldDMRS vs NewGlobalID
+	//		token = pBuf.Tokenize(_T("/"), pos);
+	//	}
+	//});
+
+	//cout << "elapsed3 : " << elapsed2 << "	size2 : " << map2.size() << endl;
+
+#pragma region AllPPlRelatedStuff
+	//cout << &GetUnorderedMaptoString() << endl;
+	//string&& t =move ( GetUnorderedMaptoString());
+	//cout << t;
+
+	//cout << GetUnorderedMaptoString();
+	//f( GetUnorderedMaptoString());
+	//array<int, 200000> a;
+	//iota(begin(a), end(a), 0);
+	//combinable<int> sum;
+	//parallel_for_each(begin(a), end(a), [&](int i) {
+	//	sum.local() += (is_prime(i) ? i : 0);
+	//});
+	//auto prime_sum = sum.combine(plus<int>());
+
+	//std::unordered_map<int, int> m;
+	//for (size_t i = 0; i < 2000; i++)
+	//	m[i] = i*i*i*i;
+
+	//string app = "";
+	//__int64 elapsed{};
+
+	// elapsed = time_call([&] {
+	//	combinable<string>cm;
+	//	parallel_for_each(begin(m), end(m), [&](const pair<int, int>& p){
+	//		cm.local() += to_string(p.first) + " = " + to_string(p.second) + "/";
+	//	});
+	//	cm.combine_each([&](string &i){app += i; });
+	//});
+
+	// cout <<"size : "<<app.size()<<"	combinalble : " << elapsed << endl;
+	//struct pair_add {
+	//	int operator()(int i, const std::pair<int, int>& x) {
+	//		return i + x.second;
+	//	}
+	//};
+	//app.clear();
+	//app = "";
+	//
+	//elapsed = time_call([&] {
+	//	accumulate(m.begin(), m.end(), 0, [&](int i, const std::pair<int, int>& x) {
+	//		return app.append(to_string(x.first) + " = " + to_string(x.second) + "/").size();
+	//	});
+	//});
+
+	//cout << "size : " << app.size() << "	accumulate : " << elapsed << endl;
+	//
+	//vector<wstring> words;
+	//words.push_back(L"Lorem ");
+	//
+	//words.push_back(L"ipsum ");
+	//words.push_back(L"dolor ");
+	//auto w = parallel_reduce(begin(words), end(words),wstring());  
+#pragma endregion
+
+	return 0;
+}

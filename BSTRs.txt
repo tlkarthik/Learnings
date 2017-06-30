@@ -1,0 +1,46 @@
+// BSTRs.cpp : Defines the entry point for the console application.
+//
+#pragma once
+#include "stdafx.h"
+#include "stdafx.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace ATL;
+using namespace std;
+
+class bstrs
+{
+public :
+	CComBSTR get_bstr(){
+		CComBSTR  s = L"In method";
+		return s;
+	}
+};
+
+vector<int> doubleValues(const vector<int>& v)
+{
+	vector<int> new_values;
+	new_values.reserve(v.size());
+	for (auto itr = v.begin(), end_itr = v.end(); itr != end_itr; ++itr)
+		new_values.push_back(2 * *itr);
+	return new_values;
+}
+
+template<typename T>
+T Large(T &n1, T &n2)
+{
+	return{ (n1 > n2 ? n1 : n2) };
+}
+
+int _tmain()
+{
+	float a = 12;
+	float b{ 16.5 };
+	float aa{ 16.5 };
+	float L = Large(a, b);
+
+	return 0;
+}
+

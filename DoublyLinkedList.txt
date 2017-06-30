@@ -1,0 +1,181 @@
+#ifndef DoublyLinkedList_H
+#define DoublyLinkedList_H
+
+#include "iostream"
+#include "CommonHeader.h"
+using namespace std;
+
+struct _Node
+{
+	int data;
+	_Node *next;
+	_Node *prev;
+};
+
+class DoublyLinkedList :public LinkedLists
+{
+public:
+	DoublyLinkedList() :LinkedLists(), head{ nullptr }{}
+
+	void showitems()
+	{
+		_Node *temp = head;
+		cout << "\nShow Items : ";
+		while (temp != nullptr)
+		{
+			cout << "\n->" << temp->prev << ", " << temp->data << ", " << temp->next;
+			temp = temp->next;
+		}
+	}
+	void InsertItemAtStart(int item)
+	{
+		_Node *temp = new _Node();
+		temp->data = item;
+		if (!head)
+		{
+			temp->next = nullptr;
+			temp->prev = nullptr;
+		}
+		else
+		{
+			temp->next = head;
+			head->prev = temp;
+		}
+		head = temp;
+		length++;
+	}
+	void InsertItemAtEnd(int item)
+	{
+		_Node* cur ;
+		if (head)
+		{
+			cur = head;
+			while (cur->next != nullptr)
+				cur = cur->next;
+
+			_Node* temp = new _Node();
+			temp->data = item;
+			cur->next = temp;
+			temp->prev = cur;
+			temp->next = nullptr;
+		}
+		else
+		{
+			cur = new _Node();
+			cur->data = item;
+			cur->next = nullptr;
+			cur->prev = nullptr;
+			head = cur;
+		}
+		length++;
+	}
+	void MakeEmpty()
+	{
+		_Node *temp = nullptr;
+		while (head!=nullptr)
+		{
+			temp = head;
+			head = head->next;
+			delete temp;
+			length--;
+		}
+	}
+	void deleteItem(int item)
+	{
+		_Node *temp = head;
+		while (temp!=nullptr)
+		{
+			if (temp->data == item)
+			{
+				_Node *prev = temp->prev;
+				_Node *next = temp->next;
+				if (!prev)
+				{
+					head = temp->next;
+					head->prev = nullptr;
+				}
+				else if (!next)
+					prev->next = nullptr;
+				else
+				{
+					prev->next = next;
+					next->prev = prev;
+				}
+
+				delete temp;
+				length--;
+				break;
+			}
+			else
+				temp = temp->next;
+		}
+	}
+	void deletePos(int pos)
+	{
+		if (!(length >= pos)) return;
+		_Node *  temp = head;
+		if (pos==1)
+		{
+			head = head->next;
+			head->prev = nullptr;
+		}
+		else
+		{
+			int cnt = 1;
+
+			while (temp != nullptr)
+			{
+				if (cnt < pos)
+					cnt++;
+				else if (cnt == pos)
+					break;
+				temp = temp->next;
+			}
+			_Node *prev = temp->prev;
+			prev->next = temp->next;
+			temp->prev = prev;
+		}
+		delete temp;
+		length--;
+	}
+	int GetSize() const { return length; }
+	void reverse_LinkedList()
+	{
+		_Node * cur, *cNext, *cPrev=nullptr, *temp=nullptr;
+		cur = head;
+		while (cur!= nullptr)
+		{
+			cNext = cur->next;
+			cPrev = cur->prev;
+			temp = cur;
+			temp->next = cPrev;
+			temp->prev = cNext;
+			cur = cNext;
+		}
+		head = cPrev->prev;//head = temp || head = cnect->next
+	}
+	void RotateLinkedListCCW(int k)
+	{
+		if (length>k)
+		{
+			int i = 1;
+			_Node * temp = head;
+			while (i<k && temp!=nullptr)
+			{
+				temp = temp->next;
+				i++;
+			}
+			_Node *kNode = temp;
+
+			while (temp->next!=nullptr)
+				temp = temp->next;
+			temp->next = head;
+			head = kNode->next;
+			kNode->next = nullptr;
+		}
+	}
+
+private:
+	_Node *head;
+};
+#endif

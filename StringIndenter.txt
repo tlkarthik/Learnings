@@ -1,0 +1,275 @@
+// ConsoleApplication2.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+using namespace std;
+#include <fstream>
+#include <iomanip>
+#include <vector>
+#include <string>
+#include <iostream>
+#include <windows.h>
+#include <algorithm>
+#include <array>
+
+vector<string> splitString(string input, string delimiter);
+void Add_Columns_For_Logging(fstream& log_writer, std::vector<string> &columns, int num_of_tabs);
+string  Get_Tabstring(int number_of_tabs);
+
+//void Adjust_Indent()
+//{
+//	__int64 numLines = 0;
+//	std::ifstream log_writer;
+//	log_writer.open("Fuckers.txt", ios::in );
+//	numLines = std::count(std::istreambuf_iterator<char>(log_writer), std::istreambuf_iterator<char>(), '\n');
+//	int wordcnt = 0;
+//	
+//	vector <vector <string>> data;
+//	while (log_writer)
+//	{
+//		std::string s ;
+//		if (!getline(log_writer, s)) break;
+//		std::istringstream ss(s);
+//		vector <string> record;
+//
+//		while (ss)
+//		{
+//			string s;
+//			if (!getline(ss, s, ' ')) break;
+//			record.push_back(s);
+//		}
+//		data.push_back(record);
+//
+//		if (!log_writer.eof())
+//			cerr << "tlk!\n";
+//	}
+//}
+
+void Fill_Data_to_Columns(fstream& log_writer, unsigned int max_length_between_columns, std::vector<string>&columns, std::vector<string>& column_data, string tabs)
+{
+	try
+	{
+		log_writer.seekg(0, ios::cur);
+	    log_writer << tabs;
+		unsigned int column_index = 0;
+		for each (string column in column_data)
+		{
+			bool bIsColmunLenEven = false;
+			bool left_spaces = true;
+			unsigned int splint_num;
+			const int data_length = column.length();
+			int column_length = 0;
+
+			if (column_index < columns.size())
+				column_length = columns[column_index].size();
+			else
+				column_index = 0;
+
+			if (column_length >data_length)
+			{
+				if (column_length % 2 == 0) bIsColmunLenEven = true;
+
+				if (bIsColmunLenEven)
+					splint_num = abs((column_length - data_length) / 2);
+				else
+					splint_num = abs(((column_length - data_length) / 2) + 1);
+
+				for (unsigned int i = 1; i <= splint_num; i++)
+				{
+					column = " " + column;
+					if (i == splint_num)
+						left_spaces = false;
+				}
+
+				for (unsigned int j = 1; j <= splint_num; j++)
+					if (!left_spaces) column = column + " ";
+			}
+
+			for (int k = column.length(); k <= column_length; k++)
+				column = column + " ";
+
+			column_index++;
+			log_writer << setfill(' ') << column.data() << setw(max_length_between_columns);
+		}
+		log_writer << "\n";
+	}
+	catch (...){}
+}
+
+void make_symbol_directory()
+{
+	std::wstring folder = L"C:\\Temp\\symbols";
+	std::wstring wSysTempPath = folder;
+	wSysTempPath += L"\\Fuckers.txt";
+	fstream of;
+	of.open(wSysTempPath, ios::in | ios::out | ios::app );
+
+	if (of.fail())
+	{
+		CreateDirectory(folder.data(), NULL);
+	}
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	/*fstream tlk_file;
+	string s = "Writihg dsfsdfsdfsdfsdfsdf fdgdfg  wofstream \n"; 
+	tlk_file.open("Fuckers.txt",ios::out| ios::app);
+	tlk_file <<s.data();
+	tlk_file.close(); 
+	getchar();
+
+	streampos begin, end,offset,current;
+	ifstream myfile("Fuckers.txt", ios::binary);*/
+
+	//begin = myfile.tellg();
+	//myfile.seekg(0, ios::end);
+	//end = myfile.tellg();
+	////offset = 
+	//myfile.close();
+	
+	/*fstream file;
+	file.open("Fuckers.txt", ios::in | ios::out | ios::binary);
+	int s =static_cast<int> (file.tellp());
+	file.seekg(0, ios::end);
+	int e =static_cast<int>(file.tellp());
+	file.seekg(e + 10, ios::cur);
+	file << "gfdgdfgfdgdfgdfgfdgdfgdfg ";
+	int p = file.showpos;*/
+
+	//std::vector<string>columns;
+	//fstream log_writer;
+	////log_writer << setfill(' ');
+	//make_symbol_directory();
+	 
+	/*log_writer.open("D:\\log\\Fuckers.txt", ios::in | ios::out | ios::app);
+
+	columns.push_back("coltttum1");
+	columns.push_back("columgTTttttttt2");
+	columns.push_back("c333333");
+	columns.push_back("coluy4");
+
+	Add_Columns_For_Logging(log_writer, columns, 3);*/
+
+	/*double gain_start = 0;
+	double gain_stop = 15;
+
+	std::vector<string> gain_table(0);
+	std::vector<string>::iterator itr;
+	gain_table.push_back("dfdsfsdf");
+	gain_table.push_back("fg");
+	gain_table.push_back("fdgfdgfdgzdfgzttttttttttttt");
+	gain_table.push_back("fgfgg");
+	gain_table.push_back("fgfttttttttgg");
+	gain_table.push_back("fgf");
+	std::cout << "gain_table size: " << int(gain_table.size()) << " elements\n" << endl;
+
+	std::cout << "gain_table Elements are : \n";
+	for (itr = gain_table.begin(); itr<gain_table.end(); itr++)
+		std::cout << ' ' << *itr << endl;
+
+	std::vector<string>::iterator result;
+	result = max_element(gain_table.begin(), gain_table.end());
+	std::cout << "max element value is: " << *result << endl;
+	std::cout << "max element index is: " << std::distance(gain_table.begin(), result) << '\n';
+*/
+	/*std::vector<string> splittes;
+	splitString("dfdsfds11111fsdf\ttsd3333333333333fsdfsdfsdfs\ttS4444444444Ddfsdfsd\ttSDfsdfs", "\tt", splittes);*/
+
+	double d = -123.589;
+	cout << abs(d);
+
+	return 0;
+}
+
+//void splitString(string input, string delimiter, std::vector<string> &output)
+//{
+//	vector<string> output;
+//	size_t start = 0;
+//	size_t end = 0;
+//
+//	while (start != string::npos && end != string::npos)
+//	{
+//		start = input.find_first_not_of(delimiter, end);
+//
+//		if (start != string::npos)
+//		{
+//			end = input.find_first_of(delimiter, start);
+//
+//			if (end != string::npos)
+//			{
+//				output.push_back(input.substr(start, end - start));
+//			}
+//			else
+//			{
+//				output.push_back(input.substr(start));
+//			}
+//		}
+//	}
+//	return output;
+//}
+
+void Add_Columns_For_Logging(fstream& log_writer, std::vector<string> &column_names, int num_of_tabs)
+{
+	if (log_writer.is_open())
+	{
+		unsigned int max_length_between_columns = column_names[0].length();
+		unsigned int columns_length = 0;
+
+		for (const auto& column:column_names)
+		{
+			columns_length = columns_length + column.length();
+			if (max_length_between_columns < column.length())
+				max_length_between_columns = column.length();
+		}
+		unsigned int underline_length = columns_length + max_length_between_columns*(column_names.size());
+
+		string tabs = Get_Tabstring(num_of_tabs);
+		log_writer << tabs << setfill('-') << setw(underline_length) << "\n";
+
+		log_writer << tabs;
+		max_length_between_columns += 10;
+		for (const auto& column : column_names)
+		{
+			string temp_column = column;
+			for (unsigned int i = column.length(); i <= max_length_between_columns; i++)
+				temp_column = temp_column + " ";
+			log_writer << setfill(' ') << column << setw(max_length_between_columns);
+		}
+		
+		log_writer <<"\n"<<tabs<< setfill('-') << setw(underline_length) << "\n";
+
+		std::vector<string> column_data;
+		column_data.push_back("c");
+		column_data.push_back("c222222");
+		column_data.push_back("c3");
+		column_data.push_back("c444");
+
+		Fill_Data_to_Columns(log_writer, max_length_between_columns, column_names, column_data,  tabs);
+		column_data.clear();
+		column_data.push_back("cddddd");
+		column_data.push_back("c2222");
+		column_data.push_back("cttt");
+		column_data.push_back("c444rrrr");
+
+		Fill_Data_to_Columns(log_writer, max_length_between_columns, column_names, column_data, tabs);
+
+		column_data.clear();
+		column_data.push_back("cddddd");
+		column_data.push_back("c22");
+		column_data.push_back("c3ttt");
+		column_data.push_back("c44rr");
+
+		Fill_Data_to_Columns(log_writer, max_length_between_columns, column_names, column_data, tabs);
+
+		if (log_writer.is_open()) log_writer.close();
+	}
+}
+
+string  Get_Tabstring(int number_of_tabs)
+{
+	string tab ;
+	for (int i = 1; i <= number_of_tabs; i++)
+		tab += "\t";
+	return tab;
+}

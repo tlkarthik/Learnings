@@ -1,0 +1,113 @@
+// Inheritance.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+
+using namespace std;
+
+class abst
+{
+public:
+	abst(){ cout << "In abst ctr" << endl; };
+	~abst(){ cout << "In abst Destrt" << endl; };
+
+	virtual void f1() = 0;
+};
+
+class Base
+{
+public:
+	Base() { cout << "In base ctr \n" << endl; };
+	virtual ~Base(){ cout << "In base Detructor \n" << endl; };
+	void f1(){ cout << "\t in base f1 " << endl; }
+
+	virtual void f3(){ cout << "\t in base f3 " << endl; }
+	void f2(){ cout << "\t in base f2 " << endl; }
+
+	virtual void f5(){ cout << "\t in base f5 " << endl; }
+	int b1;
+private:
+	
+};
+
+class D1 : public Base
+{
+public:
+	D1(){
+		//derived cann base class members
+		//But base can not
+		//if derived has same name that of base then derived will only b given the prefernce irrespective of usage of 'this'
+		b1 = 10;
+		this->b1 = 0;
+		cout << "b1 " << b1 << endl;
+		cout << "this->b1 " << this->b1 << endl;
+		cout << "In d1 ctr \n" << endl;
+	};
+	 ~D1(){ cout << "In d1 Detructor \n" << endl; };
+	
+	 void f1(){ cout << "\t in d1 f1 " << endl; }
+	  void f3(){ cout << "\t in d1 f3 " << endl; }
+	void f4(){ cout << "\t in d1 f4 " << endl; }
+
+	virtual void f5(){ cout << "\t in d1 f5 " << endl; }
+
+private:
+	int b1;
+};
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	{
+		D1 od1; //calls base ctr and derived ctr
+		//Above code shows all the methods in base and derived. But gives preference to derived only,
+		//Goes to derived only for virtual methods
+
+		od1.f1(); //calls derived f1
+		od1.f2(); //calls base f2
+		od1.f3(); //calls derived f3
+		od1.f4(); //calls derived f4
+		cout << "New start " << endl;
+		Base *ob1 = new D1(); //calls base ctr and derived ctr 
+		//It is allways possible to point base to derived => base pointer pointing derived class address
+		//Reverse is not possible.
+		//It is achived only by tye casting shown below
+
+
+		ob1->f2(); //allways calls base fnd. Dnt even show derived methods.
+		ob1->f3(); //calls d1 - f3 since method is virtual
+		delete ob1; //Normally if no virtual destructor is provided derived destructor is never called. It will leak.
+		//Directly base destructor will be called.
+		//SO, either but base destructor as virtual or put both the destructors virtual.
+		//IF u put like that then derived destructor and base destructor are called properly
+		//Else only base destructor will be called.
+		//If u put only derived virtual destructor with out base virtual destructor then it will cause a crash
+
+
+		Base  b2; //base ctr is called
+		D1 *od2 = reinterpret_cast<D1*>(&b2); //type casting from derived to base
+		D1 *od3 = static_cast<D1*>(ob1); //any type of casting can be used
+
+		//Now thesse are as good as normal derived class object
+		od2->f2(); ////call base f2
+
+		od2->f1(); //calls derived d1 - f1 . since it is a derived object it gives preference to derived methods only
+		//Like base pointer also  gives preference to base methods only irrespective to what that base pointer is pointing to . only if it is virtual then call goes to derived class
+
+		od2->f3(); //calls base f3 //But this is special. Here f3 in base is virtual so base method is called
+		od2->f4(); //calls d1 - f4
+		 
+		od2->f5();  //calls base f2.works same like od2->f3();
+		//Want to xplain cases here.
+		//Derived and base virtual then base is calledS
+		//Only derived virtual crash
+		//base only virtual then base wil be called like above.
+		//No virtual then erived is called
+		cout << "New ENd " << endl;
+	}
+
+	getchar();
+	return 0;
+}
+

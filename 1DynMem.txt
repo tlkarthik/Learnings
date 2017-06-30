@@ -1,0 +1,81 @@
+// MemGranSharedMem1.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "1DynMem.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+#include <vector>
+#include <set>
+#include <algorithm>
+#include <tuple>
+#include <Windows.h>
+#include <unordered_map>
+// The one and only application object
+#include <map>
+CWinApp theApp;
+
+using namespace std;
+
+#include <stdio.h>
+#include <conio.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
+#include <vector>
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	long v = 1234564879;
+	HANDLE hMapFile_size = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(long), _T("Local\\UniqueLinkagesBufferSize"));
+	long *pBuf_size = reinterpret_cast<long*>(MapViewOfFile(hMapFile_size, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(long)));
+	CopyMemory(pBuf_size, &v, sizeof(long));
+
+	UnmapViewOfFile(pBuf_size);
+	CloseHandle(hMapFile_size);
+
+
+
+
+
+
+	/*ifstream STt("tlk_Notes_vishalf.txt");
+	wstring str;
+
+	STt.seekg(0, ios::end);
+	str.reserve(static_cast<unsigned int>(STt.tellg()));
+	STt.seekg(0, ios::beg);
+
+	str.assign((istreambuf_iterator<char>(STt)), istreambuf_iterator<char>());
+
+	HANDLE hMessageEmptiedEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageEmptied"));
+	HANDLE hMessageSentEvent = CreateEvent(NULL, FALSE, TRUE, _T("MessageSent"));
+
+	long BUF_SIZE = sizeof(TCHAR) * str.size();
+	wstring wMapName = L"Local\\MyFileMappingObject_";
+	HANDLE hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, BUF_SIZE, wMapName.data());
+	LPCTSTR pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, BUF_SIZE);
+	CopyMemory((PVOID)pBuf, str.data(), str.size() * sizeof(TCHAR));
+
+	HANDLE hMapFile_size = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 8, _T("Local\\UniqueLinkagesBufferSize"));
+	LPCTSTR pBuf_size = (LPTSTR)MapViewOfFile(hMapFile_size, FILE_MAP_ALL_ACCESS, 0, 0, 8);
+
+	wstring size = to_wstring(BUF_SIZE);
+	CopyMemory((PVOID)pBuf_size, size.data(), size.size() * sizeof(TCHAR));
+
+
+	
+	SetEvent(hMessageSentEvent);
+	WaitForSingleObject(hMessageEmptiedEvent, INFINITE);
+
+	UnmapViewOfFile(pBuf_size);
+	CloseHandle(hMapFile_size);
+
+	UnmapViewOfFile(pBuf);
+	CloseHandle(hMapFile);*/
+	return 0;
+}

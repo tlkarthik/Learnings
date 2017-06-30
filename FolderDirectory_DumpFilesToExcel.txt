@@ -1,0 +1,118 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
+
+namespace FolderDirectory
+{
+    public class DumpFilesToExcel
+    {
+        private int row = 4;
+        private int column = 3;
+
+        Excel.Application xlApplication = null;
+        Excel.Workbook xlWorkBook = null;
+
+        private void DumpExcelToExcelWorkBook(Dictionary<string,string> files, string browsePath, bool sameSheet, Excel.Workbook oWB, Excel.Application oXL)
+        {
+            ReadInsideFile readInsideFile = new ReadInsideFile();
+            string searchList;
+            string directoryName;
+
+            try
+            {
+                Excel.Worksheet worksheet = null;
+                Excel.Sheets sheets = (Excel.Sheets)oWB.Sheets;
+
+                if (sameSheet)
+                    worksheet = (Excel.Worksheet)oXL.ActiveSheet;
+                else
+                {
+                    worksheet = (Excel.Worksheet)sheets.Add(sheets[1], Type.Missing, Type.Missing, Type.Missing);
+                    row = 4;
+                    column = 3;
+                }
+
+                worksheet.Cells[row - 2, column] = browsePath;
+                worksheet.Cells[row - 2, column - 1] = "SearchFiles";
+                worksheet.Cells[row - 2, column + 1] = "NamesAfterRemoving_ORA";
+
+                foreach (var file in files)
+                {
+                    worksheet.Cells[row, column] = file.Value;
+                    directoryName = GetDirectoryName(file.Key);
+                    try
+                    {
+                        worksheet.Name = directoryName;
+                    }
+                    catch
+                    { }
+
+                    if (file.Value.StartsWith("Ora", StringComparison.CurrentCultureIgnoreCase))
+                        worksheet.Cells[row, column + 1] = file.Value.Substring(3);
+
+                    searchList = readInsideFile.FindInSQLFiles(directoryName+"\\"+file.Value, files);
+                    worksheet.Cells[row, column - 1] = searchList;
+                    row++;
+                }
+
+                column = column + 3;
+                row = 4;
+                worksheet.UsedRange.EntireColumn.AutoFit();
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+
+            finally
+            {
+                int dicr = 1;
+                oWB.SaveAs(@"C:\Temp\FolderDirectory" + dicr);
+                dicr++;
+            }
+        }
+
+        private string GetDirectoryName(string fullPath)
+        {
+            string[] splitPaths = fullPath.Split('\\');
+
+            return splitPaths[1];
+        }
+
+        public void ReleaseObject(object obj)
+        {
+            try
+            {
+                System.Runtime.InteropServices.Marshal.ReleaseComObject(obj);
+                obj = null;
+            }
+            catch (Exception ex)
+            {
+                obj = null;
+                MessageBox.Show("Unable to release the Object " + ex.ToString());
+            }
+            finally
+            {
+                GC.Collect();
+            }
+        }
+
+        public void InitaiteExcel(Dictionary<string,string> Files, string browsePath, bool sameSheet)
+        {
+            if (xlApplication == null)
+            {
+                xlApplication = new Excel.Application();
+                xlApplication.Visible = true;
+                xlApplication.DisplayAlerts = false;
+                xlWorkBook = xlApplication.Workbooks.Add(Microsoft.Office.Interop.Excel.XlSheetType.xlWorksheet);
+                DumpExcelToExcelWorkBook(Files, browsePath, sameSheet, xlWorkBook, xlApplication);
+            }
+            else
+                DumpExcelToExcelWorkBook(Files, browsePath, sameSheet, xlWorkBook, xlApplication);
+        }
+
+    }
+}

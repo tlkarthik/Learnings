@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
+
+namespace ExcelNamingLogic
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            ExcelNamingLogic();
+        }
+
+        public List<string> foundItems = new List<string>();
+       
+        public string HeadCell{ get; set; }
+        public string StartCell { get; set; }
+        public string EndCell { get; set; }
+        public List<string> address = new List<string>();
+
+        private void ExcelNamingLogic()
+        {
+            Excel.Application xlApp = new Excel.Application();
+            Excel.Workbook xlWB = xlApp.Workbooks.Open(@"C:\Users\kltadiko\Desktop\TLK\Update\ProposedTemplate.xlsx");
+            xlApp.Visible = true;
+            Excel.Worksheet xlWS = null;
+            xlApp.DisplayAlerts = false;
+            //bool success;
+            Excel.Range xlReadRange = null;
+
+            try
+            {
+                for (int S = 1; S <= xlWB.Worksheets.Count; S++)
+                {
+                    xlWS = (Excel.Worksheet)xlWB.Worksheets.get_Item(S);
+                    xlReadRange = xlWS.UsedRange;
+                    Find(xlApp,xlReadRange,"Start");
+                    Find(xlApp, xlReadRange, "Head");
+                    Find(xlApp, xlReadRange, "End");
+                    //success = (bool)xlReadRange.Replace("Flange", "flgtlk", XlLookAt.xlPart);
+                }
+
+                xlWB.Save();
+            }
+                 
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+            }
+            finally
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                Marshal.FinalReleaseComObject(xlWS);
+                xlWS = null;
+                Marshal.FinalReleaseComObject(xlWB);
+                xlWB = null; 
+            }
+        }
+
+        private void Find(Excel.Application xlApp, Excel.Range Fruits, string findString)
+        {
+            Excel.Range currentFind = null;
+            Excel.Range firstFind = null;
+
+            currentFind = Fruits.Find(findString, Type.Missing,
+                Excel.XlFindLookIn.xlValues, Excel.XlLookAt.xlPart,
+                Excel.XlSearchOrder.xlByRows, Excel.XlSearchDirection.xlNext, false,
+                Type.Missing, Type.Missing);
+
+            while (currentFind != null)
+            {
+                if (firstFind == null)
+                    firstFind = currentFind;
+                else if (currentFind.get_Address(Excel.XlReferenceStyle.xlR1C1) == firstFind.get_Address(Excel.XlReferenceStyle.xlR1C1))
+                    break;
+
+                address.Add(currentFind.get_Address(Excel.XlReferenceStyle.xlR1C1));
+
+                currentFind.Font.Color = System.Drawing.ColorTranslator.ToOle(System.Drawing.Color.Red);
+                currentFind.Font.Bold = true;
+
+                foundItems.Add(currentFind.Cells.Value);
+                currentFind = Fruits.FindNext(currentFind);
+            }
+        }
+
+        private void LoadMappingData(Excel.Worksheet xlWS)
+        {
+
+        }
+    }
+}

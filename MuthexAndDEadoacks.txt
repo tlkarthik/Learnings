@@ -1,0 +1,132 @@
+// MuthexAndDEadoacks.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <string.h>
+using namespace std;
+
+#include <thread>
+#include <mutex>
+
+mutex mu; //Mutext must be globally declared,. because only one variable should onlyt lock. not every body opf their own
+void f1()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		mu.lock();   ///Method 1 . least safe
+		cout << "in f1" <<i<< endl;
+		mu.unlock();
+	}
+}
+
+void f2_2safer_M2()
+{
+	for (int i = 0; i < 20; i++)
+	{
+		lock_guard<mutex>lock(mu); //method -2 better safer way to handle
+		cout << "i f1" << i << endl;
+	}
+}
+
+class Pint_msg
+{
+	string msg;
+	mutex m_m1 , m_m2; //supposing we have 2 mutextes. For xplaing dead lock situation
+public:
+	Pint_msg(){};
+	/*Pint_msg(string msg)
+	{
+		lock_guard<mutex>lock(m_m1);
+		cout << "msg  : " << msg.c_str()<<", ID : "<<this_thread::get_id()<< endl;
+	}*/
+	void operator()(string msg)
+	{
+		lock_guard<mutex>lock(m_m1);
+		lock_guard<mutex>lock2(m_m2);
+		cout << "msg  : " << msg.c_str() << ", ID : " << this_thread::get_id() << endl;
+	}
+	void operator()(string msg, string msg2)
+	{
+		
+		/*lock_guard<mutex>lock(m_m1);  /
+		lock_guard<mutex>lock2(m_m2);*/
+		
+		//Putting mutexs in different order causes dead loack.
+		//When t3 thread loacks m_m1, at the same time MT loacks m_m2
+		//So both the mutes es loacks same resource  at the same time.
+		//Due to which no thread does it action on the resource and wait till the transaction is done.
+		// so its a never ending process. Hence it hangs up
+		 
+		// In order handle this situation, allways loack the mutes in same order
+		//Or else use loack mechanism
+		/*lock_guard<mutex>lock2(m_m2);
+		lock_guard<mutex>lock(m_m1);*/
+		//Soultion2
+		lock(m_m1, m_m2);
+		lock_guard<mutex>(m_m1, adopt_lock);
+		lock_guard<mutex>(m_m2, adopt_lock);
+
+		//So it is suggested to use loack for the cases of multiple mutes to avoid dead loacks
+
+		// there is also a alternative guad ie., unique guard
+		unique_lock<mutex>locker(m_m1);
+		locker.lock();
+		locker.unlock();
+		//above loack are not possible with lock_guard.
+		//It will release only at the end of } brace.
+		//We can do these for multiple times inside a same method in a particular thread
+
+		cout << "msg  : " << msg.c_str() << ", ID : " << this_thread::get_id() << " msg2 : " << msg2.c_str()<< endl;
+	}
+private:
+
+};
+
+void f3_class(Pint_msg & o)
+{
+	for (int i = 0; i < 10; i++)
+	{
+		o("In f3_class : " + i);
+	}
+}
+int _tmain(int argc, _TCHAR* argv[])
+{
+	thread t1(f1);
+	for (int i = 0; i < 20; i++)
+	{
+		mu.lock();
+		cout << "in MT " << i << endl;
+		mu.unlock();
+	}
+	thread t2([]()
+	{
+		for (int i = 0; i < 20; i++)
+		{
+			mu.lock();
+			cout << "in t2 " << i << endl;
+			mu.unlock();
+		}
+	}
+		);
+
+	Pint_msg("", "");
+	Pint_msg p; //calls constructor
+	//p("hjkl"); //calls () operator. 
+
+	thread t3(f3_class, ref(p));
+
+	for (int i = 0; i < 25; i++)
+	{
+		string msg = "This msg " + i + 'ln';
+		p(msg, " 2nd Oprator");
+	}
+
+	t1.join();
+	t2.join();
+	t3.join();
+
+	cout << "End of main";
+	return 0;
+}
+

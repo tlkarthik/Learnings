@@ -1,0 +1,55 @@
+// ConsoleApplication1.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+using namespace std;
+#include <iostream>
+#include <vector>
+#include <tuple>
+
+void m1(tuple<int, tuple<string, string>> tupParameters);
+
+void main()
+{
+	vector<int>pv;
+
+	pv.push_back(1);
+	pv.push_back(14);
+	pv.push_back(122);
+	
+	tuple<int, tuple<string, string>> tupParameters;
+
+	vector<tuple<int, tuple<string, string>>> InputMethods;
+	vector<tuple<int, string, string, tuple<string, string, string,string>>> Parameters;
+
+	InputMethods.push_back(make_tuple(1, make_tuple("ItemName", "ItemCustomMethods")));
+	Parameters.push_back(make_tuple(2, "ParameterName","ParameterCustomMethod", make_tuple("igParameter", "UOMValue", "UOMType", "DefaultValue")));
+
+	tupParameters = make_tuple(45, make_tuple("1", "2"));
+	m1(tupParameters);
+
+	//cout << get<1>(s).data();
+	//for (auto&i : InputMethods)
+	//{
+	//	auto k = get<1>(i);
+	//	cout << get<0>(i) << "  " << get<0>(k).data() << " " << get<1>(k).data() << "    ";
+	//}
+
+	//cout << "\n";
+
+	//for (auto&j : Parameters)
+	//{
+	//	auto k = get<3>(j);
+	//	cout << get<0>(j) << "  " << get<1>(j).data() << "  " << get<2>(j).data() << get<0>(k).data() << " " << get<1>(k).data() << " " << get<2>(k).data() << "  "<< get<3>(k).data();
+	//}
+
+
+	getchar();
+}
+
+void m1(tuple<int, tuple<string, string>> tupParameters)
+{
+	auto s = get<0>(tupParameters);
+	cout << (s) <<"in M1";
+
+}

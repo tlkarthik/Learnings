@@ -1,0 +1,100 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
+
+namespace Tasks
+{
+    class Program
+    {
+        public static void ThreadMethod()
+        {
+            for (int i = 0; i < 50; i++)
+            {
+                Console.WriteLine("- from method\n");
+                Thread.Sleep(100);
+            }
+        }
+        static void Main(string[] args)
+        {
+            List<int> ls = new List<int>();
+            //Enumerable.Range(0, 10).Select((i) =>ls.Add (i));
+
+            Task par_t = Task.Run(() =>
+            {
+
+                Parallel.For(0, 10, (i) =>
+                {
+                    Console.WriteLine("Parallel Before i = "+i.ToString());
+                    Thread.Sleep(100);
+                    Console.WriteLine("Parallel After i = " + i.ToString());
+                });
+            }).ContinueWith((i) => { Console.WriteLine("i = "+i.ToString()); },TaskScheduler.Current);
+
+            par_t.Wait();
+
+            Task t = Task.Run(action: ThreadMethod);
+
+            Task t1 = Task.Run(() =>
+            {
+                for (int i = 0; i < 10; i++)
+                {
+                    Console.WriteLine("* from lambda\n");
+                    Thread.Sleep(1000);
+                }
+            });
+            t1.Wait();
+            t.Wait();
+
+            //Returning a value do not require wait.
+            Task<int> ret = Task.Run(() =>
+                {
+                    Console.WriteLine("Retrurn value : ");
+                    Thread.Sleep(3000);
+                    return 2;
+                }).ContinueWith((i) => { return i.Result * 12; }, TaskContinuationOptions.OnlyOnRanToCompletion);
+
+            ret = ret.ContinueWith((j) => { return j.Result * 1000; });
+            Console.WriteLine("ert valu = " + ret.Result);
+
+            Task ret2 = Task.Run(() =>
+            {
+                Console.WriteLine("Retrurn value : ");
+                Thread.Sleep(500);
+            }).ContinueWith((i) => { Thread.Sleep(1000); Console.WriteLine("Thread sleep"); });
+
+            Console.WriteLine("ret2 completed ");
+            //Console.ReadKey();
+
+
+            //Wait all
+            Task<string>[] tasks = new Task<string>[3];
+            tasks[0] = Task.Run(() =>
+            {
+                Console.WriteLine("1");
+                Thread.Sleep(5000);
+                return "1";
+            });
+            tasks[1] = Task.Run(() => { Console.WriteLine("2"); Thread.Sleep(2000); return "2"; });
+            tasks[2] = Task.Run(() => { Console.WriteLine("3"); Thread.Sleep(3000); return "3"; });
+
+            while (tasks.Length > 0)
+            {
+                int i = Task.WaitAny(tasks);
+                Console.WriteLine("Removing task result : " + tasks[i].Result);
+                var temp = tasks.ToList();
+                temp.RemoveAt(i);
+                tasks = temp.ToArray();
+            }
+
+            //Console.WriteLine("result 0 " + tasks[0].Result);
+            //Console.WriteLine("result 1 " + tasks[1].Result);
+            //Console.WriteLine("result 2 " + tasks[2].Result);
+
+            //Task.WaitAll(tasks);
+            Console.ReadKey();
+        }
+    }
+}

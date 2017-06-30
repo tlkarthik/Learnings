@@ -1,0 +1,130 @@
+// TitBitThreads.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+using namespace std;
+#include <iostream>
+#include <thread>
+#include  <mutex>;
+#include <fstream>
+
+mutex m1,m2;
+void f1(string& s){
+	for (size_t i = 0; i < 10; ++i){
+		cout << "t1 : " << i <<s.data()<< endl;
+	}
+	s = "111111";
+}
+
+void print1(const string & s){
+	
+	for (size_t i = 0; i < 10; ++i){
+		lock(m1, m2);
+		lock_guard<mutex>l2(m2,adopt_lock);
+		lock_guard<mutex>l1(m1, adopt_lock  );
+		cout << i <<""<< s.data() << endl;
+	}
+}
+void print2(const string & s){
+
+	for (size_t i = 0; i < 10; ++i){
+		lock(m1, m2);
+		lock_guard<mutex>l1(m1, adopt_lock);
+		lock_guard<mutex>l2(m2, adopt_lock);
+		cout << i << "" << s.data() << endl;
+	}
+}
+
+
+
+//class Log
+//{
+//	
+//public:
+//	Log(){
+//		if (!of.is_open()) 
+//			of.open("cc.txt");
+//	}
+//	~Log(){ if (of.is_open()) of.close(); }
+//
+//	void wrap_print(const string & s){
+//		lock_guard<mutex>l1(_m1);
+//		cout<< s.data()<<endl ;
+//	}
+//
+//private:
+//	mutex _m1;
+//	ofstream of;
+//};
+//void fc1(Log &l,const string &m){
+//	for (size_t i = 0; i < 10; i++)
+//	{
+//		l.wrap_print(m);
+//	}
+//}
+
+//class Base
+//{
+//public:
+//	virtual void myfun() 
+//	{
+//		cout << "myfun() in Base";
+//	}
+//};
+//class Derived : public Base
+//{
+//	void myfun() final
+//	{
+//		cout << "myfun() in Derived\n";
+//	}
+//};
+//
+//struct  base {
+//	virtual void f();
+//};
+//struct derived : base {
+//	void f() ;       // virtual as it overrides base::f
+//};
+//struct mostderived : derived {
+//	void f();           // error: cannot override!
+//};
+
+struct A
+{
+	virtual void foo(){}
+	void bar();
+};
+
+struct B : A
+{
+	void foo() const ; // Error: B::foo does not override A::foo
+	// (signature mismatch)
+	void foo() override{}// OK: B::foo overrides A::foo
+	//void bar() override; // Error: A::bar is not virtual
+};
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	//string a = "sdfghjkl";
+	//thread t1(f1,ref( a));
+	//thread t2([](){
+	//	for (size_t i = 0; i < 20; ++i){
+	//		cout << "t2 : " << i << endl;
+	//	}
+	//});
+	//thread t3(print1,  "t1");
+	//thread t4(print2, "t2");
+	//t3.join();
+	//t4.join();
+
+	/*Derived d;
+	Base &b = d;
+	b.myfun();*/
+	B ob;
+	A &oa = ob;
+	
+	 int  a = 45;
+
+	return 0;
+}
+

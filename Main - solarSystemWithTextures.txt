@@ -1,0 +1,178 @@
+#include <GL\glew.h>
+#include <GL/freeglut.h>
+#include <stdio.h>
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include  <FreeImage.h>
+
+
+float angle = 0.0f;
+int width, height, earthTexID, MoonTexID, SunTexID;
+BYTE *image;
+
+void resize(int w, int h){
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(90, (float)w / (float)h, 0.1, 100.0);
+}
+
+void keyboard(unsigned char c, int x, int y){
+
+}
+void display()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glMatrixMode(GL_MODELVIEW);
+
+	glLoadIdentity();
+
+	glDisable(GL_DEPTH_TEST);
+	glWindowPos2d(0, 0);
+	glDrawPixels(width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_TEXTURE_2D);
+	gluLookAt(-6.0, 3.0, 0.0, 0.0, 0.0, -2, 0.0, 1.0, 0.0);
+
+	glColor4f(1.0f, 1.0f, 0.0f, 1.0f);
+	glTranslatef(0.0f, 0.0f, -2.0f);
+	glRotatef(angle, 0.0f, 1.0f, 0.0f);
+	GLUquadricObj *qobj1 = gluNewQuadric();
+	gluQuadricNormals(qobj1, GLU_SMOOTH);
+	gluQuadricTexture(qobj1, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, SunTexID);
+	gluSphere(qobj1,1.0f, 50, 50);
+
+	glColor4f(1.0f, 0.0f, 1.0f, 1.0f);
+	glTranslatef(3.0f, 0.0f, 0.0f);
+	glRotatef(angle + 30, 0.0f, 1.0f, 0.0f);
+	GLUquadricObj *qobj2 = gluNewQuadric();
+	gluQuadricNormals(qobj2, GLU_SMOOTH);
+	gluQuadricTexture(qobj2, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, earthTexID);
+	//glutSolidSphere(0.5, 50, 50);
+	gluSphere(qobj2, 0.5f, 50, 50);
+
+	glColor4f(0.5f, 0.5f, 0.5f, 1.0f);
+	glTranslatef(1.0f, 0.0f, 0.0f);
+	glRotatef(angle + 60, 0.0f, 1.0f, 0.0f);
+
+	GLUquadricObj *qobj3 = gluNewQuadric();
+	gluQuadricNormals(qobj3, GLU_SMOOTH);
+	gluQuadricTexture(qobj3, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D, MoonTexID);
+	gluSphere(qobj3, 0.3f, 50, 50);
+	//glutSolidSphere(0.25, 50, 50);
+
+	glDisable(GL_TEXTURE_2D);
+
+	angle += 0.5;
+	if (angle >= 360.0) angle = 0.0f;
+
+	glutSwapBuffers();
+
+}
+
+BYTE* initializeImage(const char* filepath) {
+	BYTE* image;
+	//image format
+	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+	//pointer to the image, once loaded
+	FIBITMAP *dib = 0;
+	//check the file signature and deduce its format
+	fif = FreeImage_GetFileType(filepath, 0);
+	//if still unknown, try to guess the file format from the file extension
+	if (fif == FIF_UNKNOWN)
+		fif = FreeImage_GetFIFFromFilename(filepath);
+
+	dib = FreeImage_Load(fif, filepath, 0);
+	if (dib == NULL) {
+		printf("Unable to load image");
+		return NULL;
+	}
+	image = FreeImage_GetBits(dib);
+	width = FreeImage_GetWidth(dib);
+	height = FreeImage_GetHeight(dib);
+
+	return image;
+}
+
+GLuint	initTexture(const char * filepath){
+	GLuint id;
+	glGenTextures(1, &id);
+
+	glBindTexture(GL_TEXTURE_2D, id);
+	BYTE * image = initializeImage(filepath);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, image);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,  /*GL_BLEND*/GL_REPLACE);
+	return id;
+}
+void initGL()
+{
+	//0.0 to 1.0 <=> 0 to 255. Depends on args of library
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepth(1.0);
+	glClearStencil(0);
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+
+	SunTexID = initTexture("texture_sun.jpg");
+	earthTexID = initTexture("Earth.jpg");
+	MoonTexID = initTexture("moon.jpg");
+	//image = initializeImage("E:\\karthik\\Photos\\Ugadi Celebrations\\IMAG0488.jpg");
+	image = initializeImage("Starts.jpg");
+}
+
+void timerFunc(int val)
+{
+	display();
+	glutTimerFunc(20, timerFunc, 0);
+}
+
+class BeforeMain{ static BOOL foo; };
+BOOL BeforeMain::foo = ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
+
+int main(int argc, char **argv)
+{
+	glutInit(&argc, argv);
+
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+	glutInitWindowSize(500, 500);
+
+	glutCreateWindow("HelloGL");
+
+	glewInit();
+	//if (GLEW_ARB_vertex_buffer_object)
+	//{
+	//	glGenBuffersARB();
+	//}
+	const GLubyte* version = glGetString(GL_VERSION);
+	printf("%s", version);
+
+	const GLubyte* extension = glGetString(GL_EXTENSIONS);
+	printf("%s", extension);
+
+	initGL();
+
+	glutDisplayFunc(display);
+
+
+	glutKeyboardFunc(keyboard);
+	glutTimerFunc(20, timerFunc, 0);
+
+	glutReshapeFunc(resize);
+	glutMainLoop();
+
+	return 0;
+}
+
+
+
+

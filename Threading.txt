@@ -1,0 +1,83 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Threading_newTypes
+{
+    class Program
+    {
+        public static void thread_method_1(object o)
+        {
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    if (o!=null)
+            //         Console.WriteLine("Thread method : "+i+" "+ o.ToString());
+            //    else
+            //        Console.WriteLine("Thread method : " + i + " " );
+            //    Thread.Sleep(1000);
+            //}
+
+            Parallel.For(0, 10, (i) => 
+            {
+                if (o != null)
+                    Console.WriteLine("Parallel method : " + i + " " + o.ToString());
+                else
+                    Console.WriteLine("Parallel method : " + i);
+                Thread.Sleep(1000);
+            });
+        }
+
+        //[ThreadStatic]
+        public static int i = 0;
+        static void Main(string[] args)
+        {
+            Thread t1 = new Thread(new ParameterizedThreadStart(thread_method_1));
+            t1.IsBackground = true;
+            t1.Start("Is from m1");
+            Thread t2 = new Thread(thread_method_1);
+            t2.Start("from m2");
+            t1.Join();
+            t2.Join();
+            Console.WriteLine("Out of  ");
+
+            bool Istopped = false; 
+
+            Thread stop_thread = new Thread(() =>
+            {
+                do
+                {
+                    i++;
+                    Console.WriteLine("Thread is Running : " + i);
+                    Thread.Sleep(100);
+                } while (!Istopped);
+            });
+            stop_thread.Start();
+
+          ThreadState val1 =  stop_thread.ThreadState;
+          Console.WriteLine("System.Threading.ThreadState : "+val1.ToString());
+          Thread par_th = new Thread(() =>
+          {
+             while (i<=20)
+             {
+                 i++;
+                 Console.WriteLine("Par method : " + i);
+                 Thread.Sleep(100);
+              }
+           });
+           par_th.Start();
+           ThreadState val2 = par_th.ThreadState;
+           Console.WriteLine("System.Threading.ThreadState : " + val2.ToString());
+
+           Console.ReadKey();
+           Istopped = true;
+           Console.WriteLine("Thread now exited");
+
+           Console.WriteLine("Final 1 : " + val1.ToString());
+           Console.WriteLine("Final 2 : " + val2.ToString());
+           Console.ReadKey();
+        }
+    }
+}

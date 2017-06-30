@@ -1,0 +1,155 @@
+// ConsoleApplication4.cpp : Defines the entry point for the console application.
+//
+//#define _crtdbg_map_alloc
+//#include <stdlib.h>
+//#include <crtdbg.h>
+#include "stdafx.h"
+#include <string>
+using namespace ATL;
+using namespace std;
+
+class box
+{
+public :
+	int len, bre,ht;
+
+	box(int l, int b, int h) :len(l), bre(b), ht(h){};
+	/*box(box &b)
+	{
+		this->len = b.len;
+		this->bre = b.bre;
+		this->ht = b.ht;
+	}*/
+
+	box() {};
+	double volume()
+	{
+		return len*bre*ht;
+	}
+	box operator +(const box &b)
+	{
+		return{ this->len + b.len, this->bre + b.bre, this->ht + b.ht };
+	}
+	box *operator =(const box&b)
+	{
+		this->len = b.len;
+		this->bre = b.bre;
+		this->ht = b.ht;
+		return{ this };
+	}
+};
+
+class self_string
+{
+	int len;
+public:
+	char *s;
+	int op;
+
+	self_string() :len(0), s{ NULL },op(0){}
+	self_string(char *c)
+	{
+		len = strlen(c)*sizeof(char) + 1;
+		s = new char(len);
+		strcpy_s(s, len, c);
+	}
+	self_string(self_string &c)
+	{
+		if (this->s)
+		{
+			s = NULL;
+			delete[] s;
+		}
+		s = new char(strlen(c.s)*sizeof(char) + 1);
+		strcpy_s(this->s, strlen(c.s)*sizeof(char) + 1, c.s);
+	}
+	self_string* operator=( const self_string &c)
+	{
+		if (this->s)
+		{
+			s = NULL;
+			delete[] s;
+		}
+		s = new char(strlen(c.s)*sizeof(char) + 1);
+		strcpy_s(this->s, strlen(c.s)*sizeof(char) + 1, c.s);
+		return this;
+	}
+
+	bool operator==(const self_string&c)
+	{
+		if (strcmp(this->s, c.s) == 0)
+			return true;
+		else
+			return false;
+	}
+	CComBSTR getname(){
+		CComBSTR l = L"inmethod";
+			return l;
+	}
+};
+
+//#ifdef _DEBUG
+//#ifndef DBG_NEW
+//#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+//#define new DBG_NEW
+//#endif
+//#endif  // _DEBUG
+
+
+
+void _tmain()
+{
+	/*_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	box b ={ 11, 22, 66 };
+	box b2 =b;
+	b = { 0, 0, 0 };
+	box b3{ 7, 8, 9 };
+	b = b2 + b3;
+	double d = b.volume();*/
+	/*_CrtMemState s1,s2,s3;
+	_CrtMemCheckpoint(&s1);
+	_CrtMemCheckpoint(&s2);
+	if (_CrtMemDifference(&s3, &s1, &s2))
+		_CrtMemDumpStatistics(&s3);*/
+
+	self_string obj;
+	CComBSTR cs ;
+	CComBSTR d;
+	d =  obj.getname();
+	cs.Attach( obj.getname());
+
+	d = cs;
+
+	self_string s("FFGHJKL"),s1;
+	self_string se = "qwertyuio";
+	s1 = se;
+	self_string cc = s1;
+
+	if (s1 == se)
+		s1 = "tlk";
+
+	char *c = "12" ;
+	char *s_c = new char();
+	
+	strcpy_s(s_c, sizeof(char)*strlen(c)+1 , c);
+	int i = 0;
+	while (s_c[i]!= '\0')
+	{
+		char c = s_c[i];
+		i++;
+	}
+
+	//pointers
+	char *p = s_c;
+	while (*p !='\0')
+	{
+		char pv = *p;
+		p++;
+	}
+
+	s_c = nullptr;
+	delete[] s_c;
+	
+	_CrtDumpMemoryLeaks();
+}
+

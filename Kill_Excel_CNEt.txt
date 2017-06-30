@@ -1,0 +1,29 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Kill_Excel
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Process[] excelProcesses = Process.GetProcessesByName("EXCEL");
+
+            foreach (var p in excelProcesses)
+            {
+                p.Kill();
+            }
+
+            Process[] schemaNameValidator = Process.GetProcessesByName("SchemaNameValidator.vshost");
+
+            foreach (var s in schemaNameValidator)
+            {
+                s.Kill();
+            }
+        }
+    }
+}

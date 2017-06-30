@@ -1,0 +1,81 @@
+// ConditionVar.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <thread>
+using namespace std;
+#include <iostream>
+#include <deque>
+#include <mutex>
+#include <condition_variable>
+
+deque<int>d1;
+mutex m1;
+condition_variable cond; 
+void f1()
+{
+	int i = 0;
+	//unique_lock<mutex>l(m1, defer_lock);
+	// as deque is shared resource we shoulf loaack the resource while using. Else it causes data race
+	while (i<10)
+	{
+		unique_lock<mutex>l(m1);
+		d1.push_front(i);
+		l.unlock();
+		cond.notify_one();
+		this_thread::sleep_for(chrono::milliseconds(15));
+		i++;
+	}
+	
+}
+
+void f2()
+{
+	while (!(d1.empty()))
+	{
+		cout << "Abt Popp : " << d1.back() << endl;
+		unique_lock<mutex>l(m1); //defer_lock do not lock immediately the mutes
+		cond.wait(l, []()->bool{ return !(d1.empty()); });
+		d1.pop_back();
+		l.unlock();
+		this_thread::sleep_for(chrono::milliseconds(512));
+	}
+}
+
+void f3_loack_manual()
+{
+	unique_lock<mutex>l(m1,defer_lock); //defer_lock do not lock immediately the mutes
+	while (!(d1.empty()))
+	{
+		cout << "f3_loack_manual : " << d1.back() << endl;
+		l.lock();
+		d1.pop_back();
+		l.unlock();
+		this_thread::sleep_for(chrono::milliseconds(512));
+	}
+}
+
+void f3_loack_auto()
+{
+	unique_lock<mutex>l(m1); //defer_lock do not lock immediately the mutes
+	while (!(d1.empty()))
+	{
+		cout << "Abt Popp : " << d1.back() << endl;
+		d1.pop_back();
+		l.unlock();
+		this_thread::sleep_for(chrono::milliseconds(512));
+	}
+}
+int _tmain(int argc, _TCHAR* argv[])
+{
+	thread  t1(f1);
+	//thread  t2(f2);
+	thread  t3(f3_loack_manual);
+
+	t1.join();
+	//t2.join();
+	t3.join();
+
+	return 0;
+}
+

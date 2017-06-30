@@ -1,0 +1,125 @@
+// CFiles_SAmple.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <iostream>
+#include<fstream>
+#include <iterator>
+#include <algorithm>
+#include <vector>
+using namespace std;
+struct A{
+	int a;
+	int b;
+	short c;
+	long d;
+};
+
+void approach1()
+{
+
+	A x = { 1, 2, 3, 4 };
+
+	FILE* fp;
+	fopen_s(&fp, "c:\\Sample.tmp", "wb+");
+	fwrite(&x, sizeof(x), sizeof(x), fp);
+	fflush(fp);
+	fclose(fp);
+
+	x = { 0 };
+
+	fopen_s(&fp, "C:\\Sample.tmp", "a+");
+	fread(&x, sizeof(x), sizeof(x), fp);
+	fclose(fp);
+}
+
+ struct tlk_write{
+	tlk_write(const char * _m)
+	{ 
+		FILE *tlk_Notes;
+		fopen_s(&tlk_Notes, "C:\\Users\\kltadiko\\AppData\\Local\\Temp\\tlk_Notes.txt", "a");
+		fwrite(_m, strlen(_m) , 1, tlk_Notes);
+		fclose(tlk_Notes);
+	}
+};
+
+void approach2()
+{
+	int ui = 10;
+	string s = "sssss";
+	ofstream infile;
+	infile.open("C:\\tlk.txt",ios::app);
+	infile << "tlk 000";
+	infile << "tlk 1";
+	infile << "tlk 2 "<<" fd "<< s.data()<<" "<<ui;
+	infile.close();
+	//ofstream outfile;
+	//outfile.open("C:\\temppdf.txt", ios::binary | ios::out);
+	//int buffer[2];
+	//while (infile.read((char *)&buffer, sizeof(buffer)))
+	//{
+	//	outfile.write((char *)&buffer, sizeof(buffer));
+	//}
+	//infile.close();
+	//outfile.close();
+}
+
+void approach3()
+{
+	std::ifstream input("C:\\output.tmp", std::ios::binary);
+	std::ofstream output("C:\\output.tmp", std::ios::binary);
+
+	//std::copy(
+	//	std::istreambuf_iterator<char>(input),
+	//	std::istreambuf_iterator<char>(),
+	//	std::ostreambuf_iterator<char>(output));
+	//output.
+}
+
+void rvmfile(){
+	FILE * fp;
+	auto a = fopen_s(&fp, "AC110-STRU-OS-EXTDECKAREA - Copy.rvm", "r");
+	unsigned long  dest_buff[32];
+	while (!feof(fp))
+	{
+		fread_s(dest_buff, sizeof(dest_buff), sizeof(unsigned long), 32, fp);
+	}
+
+	fclose(fp);
+
+
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	rvmfile();
+	return 0;
+}
+
+void search(char *pat, char *txt)
+{
+	int M = strlen(pat);
+	int N = strlen(txt);
+
+	for (int i = 0; i <= N - M; i++)
+	{
+		int j;
+		for (j = 0; j < M; j++)
+			if (txt[i + j] != pat[j])
+				break;
+
+		if (j == M)  // if pat[0...M-1] = txt[i, i+1, ...i+M-1]
+			printf("Pattern found at index %d \n", i);
+	}
+
+	auto a = [&](int a, int b)
+	{
+		if (a % 2 == 0) 
+			return (b + 2);
+		else 
+		return 0; 
+	};
+}

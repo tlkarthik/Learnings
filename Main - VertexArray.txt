@@ -1,0 +1,131 @@
+#include <GL/freeglut.h>
+#include <stdio.h>
+
+
+float vertex[] = { 1.0f, 0.0f /*vertex*/, 1.0f, 0.0f, 0.0f,1.0f /* colour*/,
+0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f };
+
+GLubyte indices[] = {0,1,2};
+
+float vertex_q[] = { 0.5f, 0.5f, 0.0f, 1.0f  /*vertex*/, 0.0f, 0.0f, 1.0f /* colour*/,
+-0.5f,0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+-0.5f,-0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f };
+
+GLubyte indices_q[] = { 0, 1, 2,3 };
+
+
+void drawTriangles()
+{
+	printf("tlk displa");
+
+	//method 1
+	//glBegin(GL_TRIANGLES);
+
+	//glColor3f(1.0f, 0.0f, 0.0f);
+	//glVertex2f(1, 0);
+	//
+	//glColor3f(0.0f, 1.0f, 0.0f);
+	//glVertex2f(0, 1);
+
+	//glColor3f(0.0f, 0.0f, 1.0f);
+	//glVertex2f(-1, 0);
+	//glEnd();
+
+	//method 2 vertex array
+	//glEnableClientState(GL_VERTEX_ARRAY); //vertex enabke
+	//glEnableClientState(GL_COLOR_ARRAY); //color data enabled
+
+	//glVertexPointer(2, GL_FLOAT, 24, vertex); // tell how openggl how data is lyed out. here 0 => offset if any addiditonal data of vertex is ther like color normal
+	//glColorPointer(4, GL_FLOAT, 24, vertex + 2); // 6 places * 4 bytes... 2 or 4  => number of arguments
+	//glDrawArrays(GL_TRIANGLES, 0, 3);
+	//glDisableClientState(GL_VERTEX_ARRAY);
+	//glDisableClientState(GL_COLOR_ARRAY);
+
+
+	//method 3  <=> method 2
+	glEnableClientState(GL_VERTEX_ARRAY); //vertex enabke
+	glEnableClientState(GL_COLOR_ARRAY); //color data enabled
+
+	glVertexPointer(2, GL_FLOAT, 24, vertex); // tell how openggl how data is lyed out. here 0 => offset if any addiditonal data of vertex is ther like color normal
+	glColorPointer(4, GL_FLOAT, 24, vertex + 2); // 6 places * 4 bytes... 2 or 4  => number of arguments
+
+	/*chanhge*/glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_BYTE, indices); // here is the chjange for method 3.
+	//here we are sending the indices. it automatically identifies the location
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+}
+
+void drawQuad()
+{
+	//method 3 <=> method 2
+	glEnableClientState(GL_VERTEX_ARRAY); //vertex enabke
+	glEnableClientState(GL_COLOR_ARRAY); //color data enabled
+
+	glVertexPointer(3, GL_FLOAT, 28, vertex_q); // tell how openggl how data is lyed out. here 0 => offset if any addiditonal data of vertex is ther like color normal
+	glColorPointer(4, GL_FLOAT, 28, vertex_q + 3); // 6 places * 4 bytes... 2 or 4  => number of arguments
+
+	glDrawElements(GL_QUADS, 4, GL_UNSIGNED_BYTE, indices_q); // here is the chjange for method 3.
+	//here we are sending the indices. it automatically identifies the location
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	glDisableClientState(GL_COLOR_ARRAY);
+}
+void resize(int w , int h){
+	//glViewport(0, 0, 100, 100);
+}
+
+void display()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	drawTriangles();
+
+	drawQuad();
+	glutSwapBuffers();
+
+}
+void initGL()
+{
+	//0.0 to 1.0 <=> 0 to 255. Depends on args of library
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepth(1.0);
+	glClearStencil(0.0);
+}
+
+void timerFunc(int val)
+{
+	display();
+	glutTimerFunc(20, timerFunc, 0);
+}
+
+int main(int argc, char **argv)
+{
+	glutInit(&argc, argv);
+
+	glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH | GLUT_STENCIL);
+	glutInitWindowSize(500, 500);
+
+	glutCreateWindow("HelloGL");
+	
+	const GLubyte* version = glGetString(GL_VERSION);
+	printf("%s", version);
+
+	initGL();
+	
+	glutDisplayFunc(display);
+
+	glutTimerFunc(20, timerFunc, 0);
+
+	glutReshapeFunc(resize);
+	glutMainLoop();
+
+	return 0;
+}
+
+
+
+
+

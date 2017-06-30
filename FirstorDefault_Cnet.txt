@@ -1,0 +1,46 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FirstOrDefault
+{
+    public struct MyStruct
+    {
+        public int v_i { get; set; }
+        public string v_s { get; set; }
+        public MyStruct(int a , string b) :this()
+        {
+           this.v_i = a;
+           this.v_s = b;
+        }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string v = "0.0001";
+            var by = Convert.ToDecimal(v);
+            var d = Convert.ToByte((by)*255 );
+
+            var t1 = Convert.ToByte(Convert.ToDecimal(v) * 255);
+            var t2 = Convert.ToByte(Convert.ToDecimal(v, CultureInfo.InvariantCulture) * 255);
+
+            List<string> l = new List<string> { "ffff", "qqq", "www", "eee" };
+            List<int> i = new List<int>{1,2,3,45,5};
+            List<MyStruct> mystr = new List<MyStruct>();
+            mystr.Add(new MyStruct(1, "aa"));
+            mystr.Add(new MyStruct(2, "bb"));
+            mystr.Add(new MyStruct(3, "cc"));
+            mystr.Add(new MyStruct(4, "dd"));
+
+
+            var a = l.FirstOrDefault(obj => (string.Compare(obj, "ffff", true, System.Globalization.CultureInfo.InvariantCulture) == 0));
+            var b = i.FirstOrDefault(obj => obj == 31);
+            var s = mystr.FirstOrDefault(obj => (string.Compare(obj.v_s, "CC", false, System.Globalization.CultureInfo.InvariantCulture) == 0) && (obj.v_i == 3));
+            Console.WriteLine(a);
+        }
+    }
+}

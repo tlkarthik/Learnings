@@ -1,0 +1,59 @@
+// DSImplementation.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "DoublyLinkedList.h"
+#include "SinglyLinkedList.h"
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+
+	//DoublyLinkedList dl;
+	//dl.InsertItemAtEnd(10);
+	//dl.InsertItemAtEnd(20);
+	//dl.InsertItemAtEnd(30);
+	//dl.InsertItemAtEnd(40);
+	//dl.InsertItemAtEnd(50);
+	//dl.InsertItemAtEnd(60);
+	//dl.showitems();
+	//dl.RotateLinkedListCCW(3);
+	//dl.showitems();
+
+	//SinglyLinkedList l;
+	//l.InsertItemAtStart(10);
+	//l.InsertItemAtStart(20);
+	//l.InsertItemAtStart(30);
+	//l.InsertItemAtStart(40);
+	//l.InsertItemAtStart(50);
+	//l.InsertItemAtStart(60);
+	//l.reverse_LinkedList();
+	//l.RotateLinkedListCCW(4);
+	////l.MakeEmpty();
+	////l.showitems();
+	////l.InsertItemAtStart(40);
+	////l.InsertItemAtStart(50);
+	//l.showitems();
+	//l.deleteItem(0);
+	//l.deleteItem(20);
+	//l.showitems();
+	//l.InsertItemAtStart(100);
+	//l.InsertItemAtStart(50);
+	//l.InsertItemAtStart(60);
+	//
+	//cout << "\n tlk \n";
+	//l.showitems();
+	//cout << "\n Print list :  \n";
+	//l.reverse_LinkedList();
+	//l.deletePos(4);
+	////l.deletePos(1);
+	////l.deletePos(9);
+	//l.deleteItem(30);
+	//l.showitems();
+	//cout << "\n tlk \n";
+	//l.InsertItemAtEnd(1000);
+
+	getchar();
+	return 0;
+}
+

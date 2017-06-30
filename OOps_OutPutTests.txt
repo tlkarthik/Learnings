@@ -1,0 +1,139 @@
+// OutPutTests.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include<iostream>
+using namespace std;
+
+#include <algorithm>    // std::stable_sort
+#include <vector>       // std::vector
+
+bool compare_as_ints(double i, double j)
+{
+	return (int(i)<int(j));
+}
+class base {
+	int arr[10];
+};
+
+class b1 : public virtual base { };
+
+class b2 : public base { };
+
+class derived : public b1, public b2 { int k; };
+
+bool wayToSort(int i, int j) 
+{ 
+	return i > j; 
+}
+
+struct MyStruct
+{
+	int a;
+	MyStruct(){ cout << "ctr called" << endl; }
+	void reta( MyStruct obj)
+	{
+		cout << "&obj.a  : " << &obj << endl;
+		obj.a = 50;
+		cout << "Obj.a : " << obj.a << endl;
+	}
+};
+
+class Test
+{
+private:
+	int x;
+public:
+	Test(int x = 0) { this->x = x; }
+	//void change(Test *t) { this = t; }
+	void print() { cout << "x = " << x << endl; }
+};
+
+void reverseChar(char* st)
+{
+	char *str = _strdup(st);
+	//char *str = new char(strlen(st) + 1);
+	strcpy_s(str, strlen(st) + 1,  st);
+	for (int i = 0; i<strlen(str) / 2; i++)
+	{
+		char temp = str[i];
+
+		str[i] = str[strlen(str) - i - 1];
+		str[strlen(str) - i - 1] = temp;
+	}
+
+	while (*str !='\0')
+	{
+		cout << *str++ << endl;
+	}
+}
+int main(void)
+{
+
+	 char *c = "fghjkl";
+	int l = strlen(c);
+
+	reverseChar(c);
+
+
+	Test obj(5);
+	Test *ptr = new Test(10);
+	//obj.change(ptr);
+	obj.print();
+
+	//MyStruct o;
+	//cout << "&o : " << &o << endl;
+	//o.a = 100;
+	//o.reta(o);
+
+	//cout << "O.a = " << o.a << endl;
+
+	//int x = 10;
+	//int* ptr = &x;
+	////int* &ptr1 = ptr;
+	////cout << &ptr1;
+	//int j = 10;
+	//int *ptr = &j;
+	//int* &ref = &ptr;
+	//cout << ref;
+
+	//cout << sizeof(derived)<<endl;
+	//printf("%d");
+
+	vector<int> intVec = { 56, 32, -43, 23, 12, 93, 132, -154 };
+
+	// Do not include the () when you call wayToSort
+	// It must be passed as a function pointer or function object
+	stable_sort(intVec.begin(), intVec.end(), [](int i, int j){return i > j; });
+
+	for (int i : intVec)
+		cout << i << " ";
+
+	double mydoubles[] = { 3.14, 1.41, 2.72, 4.67, 1.73, 1.32, 1.62, 2.58 };
+
+	std::vector<double> myvector;
+	myvector.assign(mydoubles, mydoubles+8);
+
+	
+	std::cout << "using default comparison: \n";
+	std::stable_sort(myvector.begin(), myvector.end());
+
+	for (std::vector<double>::iterator it = myvector.begin(); it != myvector.end(); ++it)
+		std::cout << '\n' << *it;
+	std::cout << '\n';
+
+	myvector.assign(mydoubles, mydoubles + 8);
+
+	std::cout << "using 'compare_as_ints' :";
+	std::stable_sort(myvector.begin(), myvector.end(), compare_as_ints);
+	for (std::vector<double>::iterator it = myvector.begin(); it != myvector.end(); ++it)
+		std::cout << '\n' << *it;
+	std::cout << '\n';
+
+
+
+
+	getchar();
+
+	return 0;
+} 

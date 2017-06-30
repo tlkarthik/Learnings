@@ -1,0 +1,75 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApplication6
+{
+    class baseclss
+    {
+        int i;
+        public baseclss(int ii)
+        {
+            i = ii;
+            Console.WriteLine("base");
+        }
+    }
+    class deriv : baseclss
+    {
+        public deriv(int ii)
+            : base(ii)
+        {
+            Console.WriteLine("deriv");
+        }
+    }
+
+    class Program
+    {
+        public static void Main(string[] args)
+        {
+            int s=4587;
+            int g = 7089;
+            string str = hint(s, g);
+            str = hint(5555, 1234);
+            str = hint(1234, 1234);
+
+
+            //deriv d = new deriv(10);
+            //int[] a = { 1 };
+
+            //Program p = new Program();
+            //p.ince(a);
+            //Console.WriteLine(a[a.Length-1]);
+        }
+
+        private static string hint(int s, int g)
+        {
+            string sd = s.ToString();
+            string gd = g.ToString();
+            int G = 0;
+            int B = 0;
+            if (sd.Length == sd.Length)
+            {
+                for (int i = 0; i < sd.Length; i++)
+                {
+                    if (sd[i]==gd[i])
+                        G++;
+                    else
+                    {
+                        if (gd.Contains(sd[i]))
+                            B++;
+                    }
+                }
+
+            }
+            return G + "G" + B + "B";
+
+        }
+
+        void ince(int[] i)
+        {
+            i[i.Length - 1]++;
+        }
+    }
+}

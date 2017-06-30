@@ -1,0 +1,112 @@
+#include <GL/glew.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
+const char* VERTEX_SHADER = ""
+"attribute vec4 a_Position;									\n"
+"attribute vec4 a_Color;									\n"
+"attribute vec2 a_TextureCoordinate;						\n"
+"varying vec4 v_Color;										\n"
+"varying vec2 v_TextureCoordinate;							\n"
+"uniform mat4 modelMatrix;									\n"
+"uniform mat4 projectionMatrix;								\n"
+"uniform mat4 viewMatrix;									\n"
+"void main() {												\n"
+"	gl_Position = projectionMatrix * viewMatrix* modelMatrix * a_Position;\n"
+"	v_TextureCoordinate = a_TextureCoordinate;				\n"
+"	v_Color = a_Color;										\n"
+"}";
+
+const char* FRAGMENT_SHADER = ""
+"varying vec4 v_Color;										\n"
+"varying vec2 v_TextureCoordinate;							\n"
+"uniform sampler2D activeTexture;							\n"
+"uniform sampler2D activeTexture1;							\n"
+"const vec3 W = vec3(0.2125, 0.1754, 0.0721);				\n"
+"void main() {												\n"
+"	vec4 textureColor = texture2D(activeTexture, v_TextureCoordinate);\n"
+"	vec4 textureColor1 = texture2D(activeTexture1, v_TextureCoordinate);\n"
+"	vec4 color = textureColor * textureColor1;					\n"
+"	float luminance = dot(color.rgb, W);							\n"
+"	vec4 finalColor = vec4(luminance, luminance, luminance, 1.);\n"
+"	if( finalColor.a < 0.1) {                              \n"
+"			disard;											\n"
+"	} else {											    \n"
+"		gl_FragColor = vec4(luminance, luminance, luminance, 1.);\n"
+"	}\n"
+"}";
+
+
+int createShaderObject(const char* src, GLenum type) {
+	int shaderID;
+	//create shader object of type
+	//i.e. GL_VERTEX_SHADER or GL_FRAGMENT_SHADER
+	shaderID = glCreateShader(type);
+
+	//attach shader source code to the shader object
+	glShaderSource(shaderID,
+		1, //number os strings 
+		&src, //source code 
+		0);
+	//compile the shader
+	glCompileShader(shaderID);
+
+	GLint success;
+	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+	if (success) {
+		printf("Successfully compiled Shader");
+		return shaderID;
+	}
+	else {
+		//get the length of the shader compile error log
+		GLint length = 0;
+		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &length);
+		char* log = (char*)malloc(length);
+		glGetShaderInfoLog(shaderID, length, &length, log);
+		printf("Compiler failed\n%s", log);
+		return -1;
+	}
+
+	return -1;
+}
+
+int createProgram() {
+
+	int vertexShaderObject =
+		createShaderObject(VERTEX_SHADER, GL_VERTEX_SHADER);
+	int fragmentShaderObject =
+		createShaderObject(FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
+
+	if ((vertexShaderObject < 0) ||
+		(fragmentShaderObject < 0)) {
+		printf("Compiling Shaders failed!");
+		return -1;
+	}
+
+	int programObject = glCreateProgram();
+	//attach the vertex shader object and fragment shader object
+	//to program object
+	glAttachShader(programObject, vertexShaderObject);
+	glAttachShader(programObject, fragmentShaderObject);
+
+	//link the program object
+	glLinkProgram(programObject);
+	GLint success = 0;
+	glGetProgramiv(programObject, GL_LINK_STATUS, &success);
+	if (success) {
+		printf("Shader link successful");
+		return programObject;
+	}
+	else {
+		//get the length of the shader compile error log
+		GLint length = 0;
+		glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &length);
+		char* log = (char*)malloc(length);
+		glGetProgramInfoLog(programObject, length, &length, log);
+		printf("Compiler link failed\n%s", log);
+		return -1;
+	}
+
+	return -1;
+}

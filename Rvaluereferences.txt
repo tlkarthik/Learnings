@@ -1,0 +1,453 @@
+// Rvaluereferences.cpp : Defines the entry point for the console application.
+//
+
+#pragma once
+#include "stdafx.h"
+#include "stdafx.h"
+#include <string>
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <array>
+#include <memory>
+#include <utility>
+
+using namespace std;
+#pragma warning(disable:4996) 
+
+class MemoryBlock
+{
+private:
+	size_t _length; // The length of the resource.
+	int* _data; // The resource.
+public:
+
+	// Simple constructor that initializes the resource.
+	explicit MemoryBlock(size_t length)
+		: _length(length)
+		, _data(new int[length])
+	{
+		std::cout << "In MemoryBlock(size_t). length = "
+			<< _length << "." << std::endl;
+	}
+
+	// Destructor.
+	~MemoryBlock()
+	{
+		std::cout << "In ~MemoryBlock(). length = " << _length << ".";
+		if (_data != nullptr)
+		{
+			std::cout << " Deleting resource.";
+			// Delete the resource.
+			delete[] _data;
+		}
+		std::cout << std::endl;
+	}
+
+	// Copy constructor.
+	MemoryBlock(const MemoryBlock& other)
+		: _length(other._length)
+		, _data(new int[other._length])
+	{
+		std::cout << "In MemoryBlock(const MemoryBlock&). length = "
+			<< other._length << ". Copying resource." << std::endl;
+
+		std::copy(other._data, other._data + _length, _data);
+	}
+
+	// Copy assignment operator.
+	MemoryBlock& operator=(const MemoryBlock& other)
+	{
+		std::cout << "In operator=(const MemoryBlock&). length = "
+			<< other._length << ". Copying resource." << std::endl;
+
+		if (this != &other)
+		{
+			// Free the existing resource.
+			delete[] _data;
+
+			_length = other._length;
+			_data = new int[_length];
+			std::copy(other._data, other._data + _length, _data);
+		}
+		return *this;
+	}
+
+	// Retrieves the length of the data resource.
+	size_t Length() const
+	{
+		return _length;
+	}
+
+	//// Move constructor.
+	//MemoryBlock(MemoryBlock&& other)
+	//	: _data(nullptr)
+	//	, _length(0)
+	//{
+	//	std::cout << "In MemoryBlock(MemoryBlock&&). length = "
+	//		<< other._length << ". Moving resource." << std::endl;
+
+	//	// Copy the data pointer and its length from the 
+	//	// source object.
+	//	_data = other._data;
+	//	_length = other._length;
+
+	//	// Release the data pointer from the source object so that
+	//	// the destructor does not free the memory multiple times.
+	//	other._data = nullptr;
+	//	other._length = 0;
+	//}
+
+	// Move assignment operator.
+	MemoryBlock& operator=(MemoryBlock&& other)
+	{
+		std::cout << "In operator=(MemoryBlock&&). length = "
+			<< other._length << "." << std::endl;
+
+		if (this != &other)
+		{
+			// Free the existing resource.
+			delete[] _data;
+
+			// Copy the data pointer and its length from the 
+			// source object.
+			_data = other._data;
+			_length = other._length;
+
+			// Release the data pointer from the source object so that
+			// the destructor does not free the memory multiple times.
+			other._data = nullptr;
+			other._length = 0;
+		}
+		return *this;
+	}
+
+	// Move constructor. THIS IS THE ALTERNATIVE TO TWO STEP MOVE SEMANTICS
+	MemoryBlock(MemoryBlock&& other)
+		: _data(nullptr)
+		, _length(0)
+	{
+		*this = std::move(other);
+	}
+};
+
+class Rvalue
+{
+public:
+	Rvalue() :len(0), s{ nullptr }{};
+	Rvalue(int l) : len(l), s{ new char(len + 1) }
+	{
+		cout << "In Ctr\n";
+	};
+
+	~Rvalue()
+	{
+		cout << "In Destructor\n";
+		if (s)
+		{
+			s = nullptr;
+			delete[]s;
+		}
+	};
+
+	//Copy constructor
+	Rvalue(const char * other)
+	{
+		cout << "Copy Constructor : \n";
+		if (other)
+		{
+			this->len = strlen(other);
+			this->s = new char(strlen(other) + 1);
+			strcpy(this->s, other);
+		}
+	}
+
+	//Assign operator
+	Rvalue &operator =(char * other)
+	{
+		cout << "Assign operator for char: \n";
+		this->len = strlen(other);
+		this->s = new char(strlen(other) + 1);
+		strcpy(this->s, other);
+		return *this;
+	}
+
+	//Assign operator
+	Rvalue *operator =(const Rvalue &other)
+	{
+		cout << "Assign operator for other =  \n";
+		this->len = strlen(other.s);
+		this->s = new char(strlen(other.s) + 1);
+		strcpy(this->s, other.s);
+		return this;
+	}
+
+	string get_string(){ return s; };
+
+	//Move semantics - assignment operattor
+	Rvalue &operator =(Rvalue &&other) _NOEXCEPT
+	{
+		cout << "In move assgn op\n";
+		if (&other)
+		{
+			if (this != &other)
+			{
+				delete[] this->s;
+
+				cout << "Move semantics - assignment operattor =  \n";
+				this->len = strlen(other.s);
+				this->s = new char(strlen(other.s) + 1);
+				strcpy(this->s, other.s);
+
+				other.s = nullptr;
+				delete[] other.s;
+			}
+		}
+		return *this;
+	}
+
+		////Move semantics - move constructor
+		Rvalue(Rvalue &&other) :len{ 0 }, s{ nullptr }
+	{
+		cout << "In move constructor\n";
+		this->len = other.len;
+		this->s = other.s;
+
+		//Delete incoming pointer
+		other.s = nullptr;
+		delete[] other.s;
+	}
+
+	// Move constructor.
+	//Rvalue(Rvalue&& other)
+	//	: s(nullptr)
+	//	, len(0)
+	//{
+	//	*this = std::move(other);
+	//}
+
+
+private:
+	char *s;
+	int len;
+};
+void f1(int&& i){}
+int getval(){ int j{ 5 }; return j; }
+
+class dum_string
+{
+	int len;
+	char *s;
+public:
+	dum_string() : len{ 0 }, s{ 0 }{}; //default ctr
+	dum_string(const char *i) : len{ strlen(i) }, s{ new char(len + 1) }{ //Normal ctr
+		strcpy(s, i);
+	}
+
+	dum_string(const dum_string& i) //Copy Ctr
+	{
+		this->len = i.len;
+		this->s = new  char(len); //deep copy
+		strcpy(s, i.s);
+	}
+	dum_string& operator=(const dum_string& i){ //Assign opearor
+		if (this != &i){
+			if (!s) delete[]s;
+			s = nullptr;
+			this->len = i.len;
+			this->s = new  char(len);
+			strcpy(s, i.s);
+		}
+		return *this;
+	}
+
+	dum_string(dum_string&& other) :len{ 0 }, s{ 0 } //Move Ctr
+	{
+		//*this = std::move(other);
+		this->len = other.len;
+		this->s = other.s; //shallow cop
+		other.s = nullptr;
+		other.len = 0;
+	}
+	dum_string& operator=(dum_string&& other) //move = operaor
+	{
+		if (this != &other){
+			if (!s) delete[]s;
+			s = nullptr;
+			this->len = other.len;
+			this->s = other.s;
+			other.s = nullptr;
+			other.len = 0;
+		}
+		return *this;
+	}
+	~dum_string(){
+		if (!s) delete[]s;
+		s = nullptr;
+	}
+};
+
+void f1(dum_string i){
+	cout << "By Val" << endl;
+}
+void f1_ref(dum_string &i){};
+
+dum_string f2(const dum_string& i){
+	cout << "By L val Ref" << endl;
+	return i;
+}
+dum_string& f3(dum_string& i){
+	cout << "By L val Ref" << endl;
+	return i;
+}
+dum_string& f3(dum_string&& i){
+	cout << "By R val Ref" << endl;
+	return i;
+}
+void f4(dum_string &&i){
+	cout << "By R val ref" << endl;
+}
+
+void t_f(dum_string arg){
+	cout << "t_f" << endl;
+}
+void t_f(dum_string arg1, dum_string arg2){
+	cout << "t_f" << endl;
+}
+
+template<typename ...T>
+void temp(T&&... a){
+	t_f(forward<T>(a)...);
+}
+//template<typename T>
+//void temp(T arg) {
+//	//t_f(arg);
+//}
+
+
+struct A {
+	A(int&& n) { std::cout << "rvalue overload, n=" << n << "\n"; }
+	A(int& n)  { std::cout << "lvalue overload, n=" << n << "\n"; }
+};
+
+class B {
+public:
+	template<class T1, class T2, class T3>
+	B(T1&& t1, T2&& t2, T3&& t3) :
+		a1_{ std::forward<T1>(t1) },
+		a2_{ std::forward<T2>(t2) },
+		a3_{ std::forward<T3>(t3) }
+	{
+	}
+
+private:
+	A a1_, a2_, a3_;
+};
+
+template<class T, class U>
+std::unique_ptr<T> make_unique1(U&& u)
+{
+	return std::unique_ptr<T>(new T(std::forward<U>(u)));
+}
+
+template<class T, class... U>
+std::unique_ptr<T> make_unique2(U&&... u)
+{
+	return std::unique_ptr<T>(new T(std::forward<U>(u)...));
+}
+
+//template<class T>
+//T&& forward(typename remove_reference<T>::type & arg){
+//	return static_cast<T&&>(arg);
+//}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	dum_string s1 = "ctr1"; //Normal ctr
+	dum_string s2{s1}; //Copy ctr
+	s2 = s1; //= op
+	s1 = "ass op1"; //two steps - normal ctr & = operator
+	f1("Normal call");
+	f2(s1);
+	//f3("Normal call");
+	dum_string q3;
+	//q3 = f3(q1); //Only 1 = operator => deep copy
+	//dum_string q1 =  f2("case 1"); //1 Default & 1 copy ctr
+	
+	dum_string r1 = "r1"; //Normal ctr
+	dum_string q2 = f3(r1); //  1 copy ctr
+	dum_string q4 =std:: move(f3(r1)); //Only 1 = operator => deep copy
+	 
+	dum_string r2 = "r2";
+	dum_string r3 = "r3";
+	vector<dum_string>v;
+	array<dum_string, 5>a;
+	a.fill("0");
+	for (size_t i = 0; i < 5; i++)
+		v.emplace_back(move(a[i]));
+	//with out implement && ctr 
+	v.emplace_back("1"); //1 default
+	v.emplace_back(r1); //1 copy ctr
+	v.emplace_back(f2(r1)); //2 copy ctr. since f2 return value 1 cpy ctr for f2 and other for vector
+	v.emplace_back(f3(r1)); // 1 copy ctr for vector
+
+	//With out implementing && and use move fn && vice vera is jst as normal normal method. No use
+	//So implement && ctr and = operator for move
+	v.emplace_back(move(r1)); //1 move ctr
+	v.emplace_back(move( f2(r2))); //1 copy and 1 move
+	v.emplace_back(move (f3(r3))); //1 deep copy & 1 move. Most efficient way
+
+	//Perfect forwarding
+	temp(f2(r1)); //R value
+	temp(r1); // L value
+	temp(f2(r1), f2(r1)) ; //over loaded R case
+
+	auto p1 = make_unique1<A>(2); // rvalue
+	int i = 1;
+	auto p2 = make_unique1<A>(i); // lvalue
+
+	std::cout << "B\n";
+	auto t = make_unique2<B>(2, i, 3);
+
+	//{
+	//	cout << "\t Normal copy START\n";
+	//	Rvalue r(563);
+	//	Rvalue dr = "directintialisation";
+	//	r = "Assign operator";
+	//	//For all the below cases move semantics are NOT CALLED
+	//	Rvalue ass=r;
+	//	cout << dr.get_string() + "\n";
+	//	cout << r.get_string() + "\n";
+	//	Rvalue &&rval = "ravalue";
+	//	cout << rval.get_string() + "\n";
+	//	Rvalue &sing_ref = rval;
+	//	cout << sing_ref.get_string() + "\n";
+	//	cout << "\t Normal copy END\n";
+	//	cout << "\n \t\t MOVE SEMANTICS copy START\n";
+	//	//Move semantic s are used only when below kind of issue are observed
+	//	Rvalue o1, o2,self_int("std::move::self_int");
+	//	vector<Rvalue>r1;
+	//	r1.push_back(o1 = ("454645"));
+	//	r1.push_back(o2 = "22222222222");
+	//	r1.push_back(std::move(self_int)); //calls push_back(T&&)
+	//	r1.push_back(self_int); //calls push_back(T&)
+	//	r1.push_back(Rvalue(dr));
+	//	r1.push_back(Rvalue(r));
+	//	cout << "\n \t\t MOVE SEMANTICS copy END\n";
+	//}
+	//vector<MemoryBlock> v1,v2;
+	//v1.push_back(MemoryBlock(25));
+	//v1.push_back(MemoryBlock(75)); 
+	//v2 = v1;
+	//// Insert a new element into the second position of the vector.
+	//v2.insert(v2.begin() + 1, MemoryBlock(50));
+	//int i = 50;
+	//int &j = i;
+	//i = getval();
+	////f1(i);
+	//f1(2);
+	//f1(getval());
+	//getchar();
+	return 0;
+}
+

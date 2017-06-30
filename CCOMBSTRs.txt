@@ -1,0 +1,112 @@
+// CCOMBSTRs.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include "Crash.h"
+using  namespace std;
+using namespace ATL;
+
+MyBSTR getname()
+{
+	MyBSTR s = L"CVBNM<>";
+	return s.m_str;
+}
+
+CComBSTR getBSTR()
+{
+	CComBSTR s = L"VBNM<";
+	return s;
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+
+	char input[99], sentence[99];
+	input[98] = '\0';
+	cout << "Enter a sentence in all lower case with no punctuation." << endl;
+
+	cin >> (input);
+	strcat_s(sentence, input);
+
+	for (int x = 0; input[x] != 0; x++)
+	{
+		if (!(input[x] == 'a' || input[x] == 'e' || input[x] == 'i' || input[x] == 'o' || input[x] == 'u' || input[x] == ' '))
+		{
+			cout << input[x];
+		}
+	}
+	cout << endl;
+
+	for (int x = 0; input[x] != 0; x++)
+	{
+		if (input[x] == 'a' || input[x] == 'e' || input[x] == 'i' || input[x] == 'o' || input[x] == 'u')
+		{
+			cout << input[x];
+		}
+	}
+	cout << endl;
+
+
+
+
+	crash x;
+	CComBSTR m  = L"h";
+	CComBSTR t1,t2;
+	t1 = x.get_BSTR();
+	t2 = x.get_CComBSTR();
+
+	m.Attach(x.get_BSTR());
+	m.Attach(x.get_CComBSTR());
+
+
+
+	//bstr sys = ::sysallocstring(l"fgvbnhjm<l");
+	//::sysfreestring(m);
+
+	/*wchar_t *t = new wchar_t();
+	strcpyw(t, l"gbhnjml<>:?");
+	auto d = ua_lstrlenw(t);
+	wchar_t *a =new wchar_t();
+	a = t;*/
+	/*for (auto i = 0; i <= ua_lstrlenw(t)+21; i++)
+	{
+		std::wcout << t[i] << "\t " << &t + i << "\n";
+	}*/
+	//BSTR btest = SysAllocString(L"");
+	//CComBSTR ccombstr{L""};
+	//_ASSERT(btest != NULL);
+	//std::wstring wtest(btest);
+	//_ASSERT(0 == wcscmp(wtest.c_str(), btest));
+
+
+	////std::wstring wCComBSTR(ccombstr);
+	////auto i = wcscmp(wCComBSTR.data(), ccombstr.m_str);
+	////_ASSERT(0 == wcscmp(wCComBSTR.data(), ccombstr.m_str));
+	////for (size_t i = 0; i <= SysStringLen(btest); i++)
+	////{
+	////	wcout << btest[i]<<"\n";
+	////}
+	////for (size_t i = 0; i <= wtest.length(); i++)
+	////{
+	////	wcout << btest[i] << "\n";
+	////}
+	//MyBSTR s;
+	//MyBSTR e = getname();
+	//wcout << e;
+	//CComBSTR b;
+	//b = getBSTR();
+	//BSTR ys;
+	//{
+	//	ys = ::SysAllocString(L"Asdfghjk");
+	//	{
+	//		::SysFreeString(ys);
+	//	}
+	//}
+	//wcout << ys;
+
+
+	getchar();
+	return 0;
+}
+

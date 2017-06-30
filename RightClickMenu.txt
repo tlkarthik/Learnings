@@ -1,0 +1,24 @@
+// RightClickMenu.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	vector<wstring>v;
+	cout << "argc : " << argc-1 << endl;
+	for (size_t i = 0; i < argc;++i)
+		v.push_back(argv[i]);
+	
+	wstring s;
+	for (auto & itr : v)
+		 s+= itr;
+
+
+	getchar();
+	return 0;
+}
+

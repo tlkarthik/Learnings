@@ -1,0 +1,78 @@
+// FuturePromiseAsync.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <thread>
+#include <future>
+using namespace std;
+
+void factorial(int a)
+{
+	int res = 1;
+	for (int i = a; i > 0; i--)
+		res *=i;
+	cout << "Res : " << res << endl;
+}
+
+void factorial_return(int a, int &res)
+{
+	for (int i = a; i > 0; i--)
+		res *= i;
+	cout << "In  Res : " << res << endl;
+}
+
+int factorial_async(long int a)
+{
+	int res = 1;
+	for (int i = a; i > 0; i--)
+		res *= i;
+	cout << "In  Res : " << res << endl;
+
+	return res;
+}
+
+int factorial_promise(future<int>&a)
+{
+	int res = 1;
+	int A = a.get();
+	for (int i = A; i > 0; i--)
+		res *= i;
+	cout << "In  Res : " << res << endl;
+
+	return res;
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	//int a ;
+	/*thread t1(factorial, (2));
+	thread t2(factorial_return,5, ref(a)); *///But there are flaws in this method.
+	//we should use mutex & conditional variable on a, since this variable is being used across
+	//MT and 2Thread.
+
+
+
+
+	//Alternative approach is to use Async, fututr
+	future<int>a1 = async(factorial_async, 15); //default param. creates another thread by implementation
+	future<int>a2 = async(launch::async,factorial_async, 15); //create another thread
+	future<int>a3 = async(launch::deferred, factorial_async, 15); //do not create a thread
+	cout << "Get : " << a2.get() << endl;
+
+	///Aslo we can promise to give some thing some values
+	promise<int>p;
+	future<int>var = p.get_future();
+	future<int>f1 = async(launch::deferred, factorial_async, ref(var));
+	cout << "promise : " << var.get();
+
+	p.set_value(10);
+
+	//t1.join();
+	//t2.join();
+	//cout << "a : " << a<<endl;
+
+	cout << "F1 : " << f1.get() << endl;
+	return 0;
+}
+

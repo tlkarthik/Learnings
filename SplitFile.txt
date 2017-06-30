@@ -1,0 +1,83 @@
+// SplitFile.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "SplitFile.h"
+
+#include "array"
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <algorithm>
+#include <numeric>
+#include <iostream>
+#include <ppl.h>
+#include <string>
+#include <regex>
+#include <concurrent_vector.h>
+#include <concurrent_unordered_map.h>
+
+#include <stdio.h>
+#include <conio.h>
+#include <string>
+#include <fstream>
+#include <streambuf>
+#include <thread>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+
+template <class Function>
+__int64 time_call(Function&& f)
+{
+	__int64 bbegin = GetTickCount();
+	f();
+	return GetTickCount() - bbegin;
+}
+
+
+inline std::string& trim(std::string& str)
+{
+	str.erase(0, str.find_first_not_of(' '));       //prefixing spaces
+	str.erase(str.find_last_not_of(' ') + 1);         //surfixing spaces
+	return str;
+}
+struct StringHasher {
+	size_t operator()(const CString& s) const {
+		return stdext::hash_value((LPCTSTR)s);
+	}
+};
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	int nRetCode = 0;
+
+	LPCTSTR s = _T("123456789/1011121314151617181920/");
+
+	LPCTSTR p1 = StrStr(s, _T("/"));
+	vector<LPCTSTR>v_pos;
+
+	LPCTSTR pos = s;
+	do
+	{
+		LPCTSTR p1 = StrStr(pos, _T("/"));
+		v_pos.push_back(p1);
+		pos = ++p1;
+
+	} while (pos ==NULL);
+
+	//sscanf_s((LPCSTR)s, ("%.*s"), 4, 5);
+	//auto pos = s.find("1");
+	//auto len = s.length();
+
+	return nRetCode;
+}
+

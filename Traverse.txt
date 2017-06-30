@@ -1,0 +1,64 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace TraversingFolder
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        public string folder_Path { get; set; }
+        List<string> subFolders = new List<string>();
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DialogResult fb = folderBrowserDialog1.ShowDialog();
+            if (fb == DialogResult.OK)
+                textBox1.Text = folderBrowserDialog1.SelectedPath;
+            else if (fb == DialogResult.Cancel)
+                textBox1.Text = string.Empty;
+
+            folder_Path = textBox1.Text;
+        }
+
+        private int Traverse(string sub_dir)
+        {
+            int cnt = 0;
+            string[] subDirs;
+        cont:
+            try
+            {
+                if (sub_dir != string.Empty || sub_dir != null)
+                {
+                    subDirs = Directory.GetDirectories(sub_dir, "*.*", SearchOption.AllDirectories);
+                    cnt = Directory.GetFiles(sub_dir, "*.*", SearchOption.AllDirectories).Length;
+                }
+            }
+            catch (Exception)
+            {
+                goto cont;
+            }
+
+            
+            return cnt;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            int cnt = Traverse(folder_Path);
+            MessageBox.Show("Files cnt = " + cnt);
+        }
+
+
+    }
+}

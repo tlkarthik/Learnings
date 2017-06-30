@@ -1,0 +1,21 @@
+#ifndef LinkedLists_H
+#define LinkedLists_H
+class LinkedLists
+{
+public:
+	virtual void InsertItemAtStart(int item) = 0;
+	virtual void InsertItemAtEnd(int item) = 0;
+	virtual void showitems() = 0;
+	virtual void MakeEmpty() = 0;
+	virtual void deleteItem(int item) = 0;
+	virtual void deletePos(int pos) = 0;
+	virtual int GetSize() const = 0;
+	virtual void reverse_LinkedList() = 0;
+	virtual void RotateLinkedListCCW(int k) = 0;
+	
+protected:
+	int length;
+	LinkedLists() :length{ 0 }{}
+
+};
+#endif

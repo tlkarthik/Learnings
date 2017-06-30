@@ -1,0 +1,139 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Windows.Forms;
+
+namespace FolderDirectory
+{
+    public partial class FolderDirectoryForm : Form
+    {
+        public DumpFilesToExcel dumpFilesToExcel;
+        public string BrowsePath { get; set; }
+
+        Dictionary<string, string> SQLFilesDictionary = new Dictionary<string, string>();
+        public FolderDirectoryForm()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            radioButton1.Checked = true;
+            dumpFilesToExcel = new DumpFilesToExcel();
+        }
+
+        private void btnClick_Click(object sender, EventArgs e)
+        {
+            bool sameSheet;
+
+            if (radioButton1.Checked)
+                sameSheet = true;
+            else
+                sameSheet = false;
+
+            sameSheet = false;
+            GetFilesAndDirectories();
+
+            try
+            {
+                dumpFilesToExcel.InitaiteExcel(SQLFilesDictionary, BrowsePath, sameSheet);
+            }
+            catch (Exception ex)
+            {
+               // MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void GetFilesAndDirectories()
+        {
+            if (BrowsePath != null)
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(BrowsePath);
+                FileInfo[] Files = directoryInfo.GetFiles();
+
+                SQLFilesDictionary.Clear();
+                foreach (FileInfo file in Files)
+                {
+                    if (file.Extension == ".cls" || file.Extension == ".bas" || file.Extension == ".vbp")
+                        SQLFilesDictionary.Add(file.FullName, file.Name);
+
+                    if((file.Name.Contains("-ref"))&&(file.Extension==".dll"))
+                        SQLFilesDictionary.Add(file.FullName, file.Name);
+                }
+            }
+        }
+
+        private void Broswe_Click(object sender, EventArgs e)
+        {
+            DialogResult dialogResult = openFileDialog1.ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                textBox1.Text = openFileDialog1.FileName;
+                textBox1.Text = Path.GetDirectoryName(openFileDialog1.FileName);
+                BrowsePath = textBox1.Text;
+            }
+        }
+
+        private void textBox1_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = string.Empty;
+        }
+
+        private void btnQuickSearch_Click(object sender, EventArgs e)
+        {
+            List<string> quickBrowseList = new List<string>();
+
+            const string oraDB = @"\Server\Schema\Oracle\DataIntegrityScripts\";
+            const string sqlDB = @"\Server\Schema\SQL\DataIntegrityScripts\";
+
+            bool sameSheet;
+
+            quickBrowseList.Add(@"M:\ShipRefData" + oraDB);
+            quickBrowseList.Add(@"M:\ShipRefData" + sqlDB);
+
+            quickBrowseList.Add(@"M:\ShipDrawings" + oraDB);
+            quickBrowseList.Add(@"M:\ShipDrawings" + sqlDB);
+
+            quickBrowseList.Add(@"K:\Planning" + oraDB);
+            quickBrowseList.Add(@"K:\Planning" + sqlDB);
+
+            quickBrowseList.Add(@"S:\Compartmentation" + oraDB);
+            quickBrowseList.Add(@"S:\Compartmentation" + sqlDB);
+
+            quickBrowseList.Add(@"S:\HoleMgmt" + oraDB);
+            quickBrowseList.Add(@"S:\HoleMgmt" + sqlDB);
+
+            quickBrowseList.Add(@"S:\ShipStructure" + oraDB);
+            quickBrowseList.Add(@"S:\ShipStructure" + sqlDB);
+
+            quickBrowseList.Add(@"S:\StructManufacturing" + oraDB);
+            quickBrowseList.Add(@"S:\StructManufacturing" + sqlDB);
+
+            quickBrowseList.Add(@"S:\StructDetail" + oraDB);
+            quickBrowseList.Add(@"S:\StructDetail" + sqlDB);
+
+            for (int i = 0; i < quickBrowseList.Count; i++)
+            {
+                BrowsePath = quickBrowseList[i];
+
+                if (i == 0)
+                    sameSheet = true;
+                else if ((i!=0) && (i % 2 == 0))
+                    sameSheet = false;
+                else
+                    sameSheet = true;
+
+                GetFilesAndDirectories();
+                try
+                {
+                    dumpFilesToExcel.InitaiteExcel(SQLFilesDictionary, BrowsePath, sameSheet);
+                }
+                catch (Exception ex)
+                {
+                    //MessageBox.Show(ex.ToString());
+                }
+            }
+
+        }
+    }
+}

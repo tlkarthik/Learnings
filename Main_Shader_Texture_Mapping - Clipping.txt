@@ -1,0 +1,239 @@
+#include <GL\glew.h>
+#include <GL\freeglut.h>
+#include <stdio.h>
+#include "ShaderHelper.h"
+#include <glm.hpp>
+#include <gtx\transform.hpp>
+#include <FreeImage.h>
+
+float vertex[] = { 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0, 0.0,
+0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.5, 1.0,
+-1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0, 0.0 };
+
+float vertex1[] = { 0.5f, 0.5f, -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0, 1.0,
+-0.5f, 0.5f, -0.1f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0, 1.0,
+-0.5f, -0.5f, -0.1f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0, 0.0,
+0.5f, -0.5f, -0.1f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0, 0.0 };
+
+GLubyte indices[] = { 2, 1, 0 };
+GLubyte indices1[] = { 0, 1, 2, 3 };
+int programObj;
+int positionIndex;
+int colorIndex;
+int textureCoordinateIndex;
+int modelMatrixIndex;
+int projectionMatrixIndex;
+int clippingPlaneIndex;
+int activeTexture;
+int activeTexture1;
+int viewMatrixIndex;
+float angle = 0.0;
+float zPos = 0.0;
+
+int width, height;
+BYTE* image;
+GLuint textureID;
+GLuint textureID1;
+
+BYTE* initializeImage(const char* filepath) {
+	BYTE* image;
+	//image format
+	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+	//pointer to the image, once loaded
+	FIBITMAP *dib = 0;
+	//check the file signature and deduce its format
+	fif = FreeImage_GetFileType(filepath, 0);
+	//if still unknown, try to guess the file format from the file extension
+	if (fif == FIF_UNKNOWN)
+		fif = FreeImage_GetFIFFromFilename(filepath);
+
+	dib = FreeImage_Load(fif, filepath, 0);
+	if (dib == NULL) {
+		printf("Unable to load image");
+		return NULL;
+	}
+	image = FreeImage_GetBits(dib);
+	width = FreeImage_GetWidth(dib);
+	height = FreeImage_GetHeight(dib);
+
+	return image;
+}
+
+GLuint initTexture(const char* filepath) {
+	GLuint id;
+	glGenTextures(1, &id);
+
+	//bind to the texture
+	glBindTexture(GL_TEXTURE_2D, id);
+
+	BYTE* image = initializeImage(filepath);
+
+	//upload texture data to texture object
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, image);
+
+	//2 parameters that must be defined
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	return id;
+}
+
+void drawTriangle() {
+	////enable sending position data of the vertex to the graphics pipeline
+	glEnableVertexAttribArray(positionIndex);
+	glEnableVertexAttribArray(colorIndex);
+	glEnableVertexAttribArray(textureCoordinateIndex);
+
+	//tell opengl how the data is layed out in the array
+	glVertexAttribPointer(positionIndex, 2, GL_FLOAT, false, 32, vertex);
+	glVertexAttribPointer(colorIndex, 4, GL_FLOAT, false, 32, vertex + 2);
+	glVertexAttribPointer(textureCoordinateIndex, 2, GL_FLOAT, false, 32, vertex + 6);
+
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+
+	glDisableVertexAttribArray(positionIndex);
+	glDisableVertexAttribArray(colorIndex);
+	glDisableVertexAttribArray(textureCoordinateIndex);
+
+}
+
+void drawQuad() {
+	//enable sending position data of the vertex to the graphics pipeline
+	glEnableVertexAttribArray(positionIndex);
+	glEnableVertexAttribArray(colorIndex);
+	glEnableVertexAttribArray(textureCoordinateIndex);
+	//tell opengl how the data is layed out in the array
+
+	glVertexAttribPointer(positionIndex, 3, GL_FLOAT, false, 36, vertex1);
+	glVertexAttribPointer(colorIndex, 4, GL_FLOAT, false, 36, vertex1 + 3);
+	glVertexAttribPointer(textureCoordinateIndex, 2, GL_FLOAT, false, 36, vertex1 + 7);
+	//draw the primitive (this is the function which will trigger data transfer
+	//	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_QUADS, 4, GL_UNSIGNED_BYTE, indices1);
+
+	glDisableVertexAttribArray(positionIndex);
+	glDisableVertexAttribArray(colorIndex);
+	glDisableVertexAttribArray(textureCoordinateIndex);
+}
+
+void display() {
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	angle += 0.05f;
+	zPos += 0.001;
+	if (angle >= 360.0) angle = 0.0f;
+	if (zPos >= 100.0) zPos = 0.0f;
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	//write the active texture 
+	glUniform1i(activeTexture, 0);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textureID1);
+	//write the active texture 
+	glUniform1i(activeTexture1, 1);
+
+
+
+	glm::mat4 viewMatrix = glm::mat4();
+	viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, zPos),
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0));
+	glUniformMatrix4fv(viewMatrixIndex, 1, false, &viewMatrix[0][0]);
+
+	glm::mat4 modelMatrix = glm::mat4();
+	//	modelMatrix = glm::translate(glm::vec3(0.0f, 0.0f, -zPos));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, 0.0f));
+	//	modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+	glUniformMatrix4fv(modelMatrixIndex, 1, false, &modelMatrix[0][0]);
+	drawTriangle();
+
+	modelMatrix = glm::mat4();
+	//	modelMatrix = glm::translate(glm::vec3(0.0f, 0.0f, -zPos));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.5f, 0.0f, 0.0f));
+	//	modelMatrix = glm::rotate(modelMatrix, angle, glm::vec3(1.0f, 0.0f, 0.0f));
+	glUniformMatrix4fv(modelMatrixIndex, 1, false, &modelMatrix[0][0]);
+
+	drawQuad();
+
+	glutSwapBuffers();
+}
+
+void resize(int w, int h) {
+	glViewport(0, 0, w, h);
+
+	glm::mat4 projectionMatrix =
+		glm::perspective(90.0f, (float)w / (float)h, 0.1f, 100.0f);
+	glUniformMatrix4fv(projectionMatrixIndex, 1, false, &projectionMatrix[0][0]);
+
+}
+
+void initGL() {
+	//send the color_buffer clearing color
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClearDepth(1.0);
+	glClearStencil(0.0);
+	textureID = initTexture("Earth.jpg");
+	textureID1 = initTexture("texture_sun.jpg");
+
+	programObj = createProgram();
+	if (programObj > 0) {
+		//load the program object for execution on the GPU
+		glUseProgram(programObj);
+
+		positionIndex = glGetAttribLocation(programObj, "a_Position");
+		colorIndex = glGetAttribLocation(programObj, "a_Color");
+		textureCoordinateIndex = glGetAttribLocation(programObj, "a_TextureCoordinate");
+		modelMatrixIndex = glGetUniformLocation(programObj, "modelMatrix");
+
+		projectionMatrixIndex = glGetUniformLocation(programObj, "projectionMatrix");
+		viewMatrixIndex = glGetUniformLocation(programObj, "viewMatrix");
+		activeTexture = glGetUniformLocation(programObj, "activeTexture");
+		activeTexture1 = glGetUniformLocation(programObj, "activeTexture1");
+		clippingPlaneIndex = glGetUniformLocation(programObj, "clippingPlane");
+		glUniform4f(clippingPlaneIndex, 1.0, 0.0, 0.0, 0.0);
+	}
+}
+
+
+void timerFunc(int val) {
+	display();
+
+	glutTimerFunc(20, timerFunc, 0);
+}
+
+int main(int argc, char** argv) {
+	glutInit(&argc, argv);
+
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_STENCIL);
+
+	glutInitWindowSize(500, 500);
+
+
+	glutCreateWindow("HelloGL");
+
+	const GLubyte* version = glGetString(GL_VERSION);
+	printf("%s", version);
+
+	glewInit();
+
+	//rendering context os created, can send opengl calls
+	initGL();
+
+	glutDisplayFunc(display);
+
+	glutTimerFunc(20, timerFunc, 0);
+
+	glutReshapeFunc(resize);
+	//	glutIdleFunc(display);
+	glutMainLoop();
+
+	return 0;
+
+
+}

@@ -1,0 +1,501 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.IO;
+
+namespace WindowsFormsApplication2
+{
+    public partial class Form1 : Form
+    {
+        public static string Logfolderpath = "";
+        public static string folderpath = "";
+        public static string UsingShip = "";
+        public Form1()
+        {
+            InitializeComponent();
+            CustomerDataSets o = new CustomerDataSets();
+            textBox1.Text = o.m_sDBProviderType;
+            textBox2.Text = o.m_sSite;
+            o = null;
+        }
+
+        private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+            CustomerDataSets o1 = new CustomerDataSets();
+            foreach (string s in o1.m_lShips)
+            {
+                comboBox1.Items.Add(s);
+            }
+            o1 = null;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (textBox3.Text==string.Empty)
+            {
+                folderpath = "C:\\Temp\\";
+            }
+
+            folderpath = Path.Combine(folderpath, ("CustomerDataSets_" + DateTime.Now.ToString("DDMM-YYYY-HH-MM-SS")));
+            Directory.CreateDirectory(folderpath);
+
+            string PartClass_Schema_Query = @"declare @Temp table (DBViewNames  VARCHAR(100) ,PartClassNames VARCHAR(100))  
+                                             begin 
+                                            insert into @Temp 
+                                              select distinct ViewNames, PartClass from ( 
+                                              select jdv.DBViewName ViewNames, 
+	                                             case left(jdv.DBViewName,5) 
+		                                             when 'CUCMP' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUCSH' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUSDT' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUSMF' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUSPS' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUUDP' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		 
+	                                             else  
+		                                            case left(jdv.DBViewName,4) when 'CUSS'  then SUBSTRING(jdv.DBViewName,5,(LEN(jdv.DBViewName)-4)) 
+												                                            else jdv.DBViewName end 
+                                             end  
+                                             PartClass from IJDBView jdv 
+                                            join ClassInfoView civ on civ.oid = jdv.oid 
+                                            join IJClassDef cd on cd.oid = civ.oid 
+                                            join JClass_Implements_JInterfaces jcji on jcji.oidOrg = cd.oid 
+                                            join IJNamedObject jno on jno.oid = jcji.oidDst and cd.oid not in ( select oid from IJPackageMember)  where      
+                                            len(jdv.DBViewName) >30  ) as c order by ViewNames 
+
+                                            select distinct 
+	                                            case RIGHT(PartClassNames,2) 
+	                                             when 'OV' then SUBSTRING(PartClassNames,1,(LEN(PartClassNames)-2)) 
+	                                             else 
+		                                            case RIGHT(PartClassNames,1)  when 'V' then SUBSTRING(PartClassNames,1,(LEN(PartClassNames)-1)) 
+		                                            else PartClassNames end	 
+	                                             end  PartClassNames  from @Temp 
+                                            end ";
+
+            string Attributes_query = @"select  distinct jdc.DBColumnName from IJDBColumn jdc
+                                        join IJNamedObject jno on jno.oid = jdc.oid 
+                                        join AttributeInfoView attr on attr.oid = jno.oid
+                                        join IJAdminInfo ad on ad.oid = attr.oid 
+                                        where len(jdc.DBColumnName) > 30 and ad.UserFlags = 2 ";
+
+            string CustomInterface_query = @"select distinct jdv.DBViewName from IJNamedObject jno 
+                                            join JClass_Implements_JInterfaces jcji on jcji.oidOrg = jno.oid
+                                            join IJDBView jdv on jdv.oid = jcji.oidDst where  len(jdv.DBViewName) > 30 and jdv.DBViewName like 'JUA%'";
+
+
+            CustomerDataSets o1 = new CustomerDataSets();
+            string Ship = comboBox1.Text;
+            UsingShip = Ship;
+            string catalog = o1.GetActiveCatalogDb(o1.m_sSite, o1.m_sServerName, Ship);
+
+            Excel.Application oXL = null;
+            Excel.Workbook oWB = null;
+            oXL = new Excel.Application();
+
+            oXL.Visible = true;
+            oXL.DisplayAlerts = false;
+            oWB = oXL.Workbooks.Add(Microsoft.Office.Interop.Excel.XlSheetType.xlWorksheet);
+
+            string filepath = folderpath+"\\" + Ship+".xlsx";
+
+            o1.ExecuteQueryAndDisplayinExcel(o1.m_sServerName, catalog + "_SCHEMA", PartClass_Schema_Query, oXL, "30CharPC", oWB, filepath);
+            o1.ExecuteQueryAndDisplayinExcel(o1.m_sServerName, catalog + "_SCHEMA", CustomInterface_query, oXL, "30CharCustomInterfaces", oWB, filepath);
+            o1.ExecuteQueryAndDisplayinExcel(o1.m_sServerName, catalog + "_SCHEMA", Attributes_query, oXL, "30CharAttributes", oWB, filepath);
+
+            o1 = null;
+            oWB = null;
+            oXL = null;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                folderpath = folderBrowserDialog1.SelectedPath;
+                textBox3.Text = folderpath;
+                button1.Enabled = true;
+            }
+
+            this.Focus();
+        }
+
+    }
+}
+
+//Designer
+namespace WindowsFormsApplication2
+{
+    partial class Form1
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.label1 = new System.Windows.Forms.Label();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.button2 = new System.Windows.Forms.Button();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.SuspendLayout();
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(30, 52);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(49, 13);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "DB Type";
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(227, 45);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(144, 20);
+            this.textBox1.TabIndex = 1;
+            // 
+            // label2
+            // 
+            this.label2.Location = new System.Drawing.Point(30, 104);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(63, 14);
+            this.label2.TabIndex = 0;
+            this.label2.Text = "ActiveSite";
+            // 
+            // textBox2
+            // 
+            this.textBox2.Location = new System.Drawing.Point(227, 98);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(182, 20);
+            this.textBox2.TabIndex = 2;
+            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(30, 167);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(61, 13);
+            this.label3.TabIndex = 3;
+            this.label3.Text = "Select Ship";
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(227, 164);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(182, 21);
+            this.comboBox1.TabIndex = 4;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(257, 307);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "Process";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(30, 220);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(151, 13);
+            this.label4.TabIndex = 7;
+            this.label4.Text = "OutPutLocation for log and Xls";
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(609, 210);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(46, 23);
+            this.button2.TabIndex = 9;
+            this.button2.Text = ".....";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // textBox3
+            // 
+            this.textBox3.Location = new System.Drawing.Point(227, 217);
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(334, 20);
+            this.textBox3.TabIndex = 10;
+            // 
+            // Form1
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(680, 370);
+            this.Controls.Add(this.textBox3);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.comboBox1);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.label1);
+            this.Name = "Form1";
+            this.Text = "CustomerDataSets";
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
+        private System.Windows.Forms.TextBox textBox3;
+    }
+}
+
+//Logger
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.IO;
+
+namespace WindowsFormsApplication2
+{
+    class LogProcess
+    {
+        CustomerDataSets oy = new CustomerDataSets();
+        StreamWriter m_LogWriter = new StreamWriter(Form1.folderpath + "\\" + Form1.UsingShip + "_log.txt", true);
+
+        public void Log(string strLogMessage)
+        {
+            m_LogWriter.WriteLine(strLogMessage);
+            m_LogWriter.Flush();
+        }
+        public void LogDispose()
+        {
+            m_LogWriter.Close();
+        }
+    }
+}
+
+//Customer
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Forms;
+using Ingr.SP3D.Common.Middle.Services.Hidden;
+using System.Data;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Reflection;
+using Ingr.SP3D.Common.Middle.Services;
+using System.IO;
+
+namespace WindowsFormsApplication2
+{
+    public class CustomerDataSets
+    {
+        public string m_sSite;
+        public string m_sServerName;
+        public string m_sDBProviderType;
+        public List<string> m_lShips = new List<string>();
+
+        public CustomerDataSets()
+        {
+
+            SiteManager oSiteMgr = MiddleServiceProvider.SiteMgr;
+            oSiteMgr.ConnectSite();
+            Site oActiveSite = oSiteMgr.ActiveSite;
+            this.m_sSite = oActiveSite.Name;
+            this.m_sDBProviderType = oActiveSite.DBProvider;
+
+            foreach (Plant oPlant in oActiveSite.Plants)
+            {
+                m_lShips.Add(oPlant.Name);
+            }
+
+            this.m_sServerName = oActiveSite.Server;
+            
+        }
+
+        public string GetActiveCatalogDb(string site, string ServerName, string Ship)
+        {
+            LogProcess olog = new LogProcess();
+
+            try
+            {
+                SQLDBConnection forcatalog = new SQLDBConnection(ServerName, site);
+                string Query = @"SELECT db.path FROM JDatabase db JOIN XDatabaseForCatalog rdbm ON 
+                                rdbm.oiddestination = db.oid Join JProjectRoot pr on pr.oid = rdbm.oidorigin
+                                where UPPER(pr.name) =UPPER('" + Ship + "')";
+                string CatalogDb = "";
+                DataTable oDBtable = forcatalog.ExecuteSelectQuery(Query);
+                if (oDBtable != null)
+                {
+                    foreach (DataRow oDataRow in oDBtable.Rows)
+                    {
+                        CatalogDb = oDataRow["path"].ToString();
+                        CatalogDb = CatalogDb.Substring(ServerName.Length + 17);
+                    }
+                }
+
+               // Form1.Logfolderpath = Form1.folderpath + "\\" + "tlk_log" + ".txt";
+                olog.Log("------------------------------------------------------------------------------------");
+                olog.Log("MachineName : " + Environment.MachineName);
+                olog.Log("User :" + Environment.UserDomainName + "\\" + Environment.UserName+"\\"+Environment.MachineName);
+                olog.Log("Version : " + Environment.Version);
+                olog.Log("DataBase Type : " + m_sDBProviderType);
+                olog.Log("DataBase Server Name : " + m_sServerName);
+                olog.Log("Site Name : " + m_sSite);
+                olog.Log("Selected Ship Name : " + Ship);
+                olog.Log("Corresponding Catalog : " + CatalogDb);
+                olog.Log("------------------------------------------------------------------------------------");
+                olog.LogDispose();
+
+                return CatalogDb;
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show("Message from GetActiveCatalogDb  " + ex.Message);
+                olog.Log(ex.Source);
+                olog.Log(ex.Message);
+                olog.LogDispose();
+                return null;
+            }
+        }
+
+        public void ExecuteQueryAndDisplayinExcel(string ServerName, string DataBase, string Query, Excel.Application oXL, String worksheetName, Excel.Workbook oWB, String FilePath)
+        {
+            try
+            {
+                int rowCount = 3;
+                int colCount = 3;
+
+                Excel.Worksheet oSheet = null;
+                Excel.Sheets oss;
+                Excel.Range oRange;
+
+                oss = (Excel.Sheets)oWB.Sheets;
+                oSheet = (Excel.Worksheet)oss.Add(oss[1], Type.Missing, Type.Missing, Type.Missing);
+                oSheet.Name = worksheetName;
+
+                SQLDBConnection SQLDB = new SQLDBConnection(ServerName, DataBase);
+
+                DataTable oDBtable = SQLDB.ExecuteSelectQuery(Query);
+                if (oDBtable != null)
+                {
+                    foreach (DataColumn oDC in oDBtable.Columns)
+                    {
+                        oSheet.Cells[rowCount, colCount] = oDC.ColumnName;
+
+                        rowCount = rowCount + 1;
+                        foreach (DataRow oDataRow in oDBtable.Rows)
+                        {
+                            rowCount = rowCount + 1;
+                            oSheet.Cells[rowCount, colCount] = oDataRow[oDC.ColumnName].ToString();
+                        }
+
+                        colCount = colCount + 1;
+                        rowCount = 3;
+                    }
+
+                    string[] ExcelCols = { "C3", "D4", "E5", "F6", "G7", "H8", "I9", "J10", "K11", "L12" };
+                    int i = 0;
+                    do
+                    {
+                        oRange = oSheet.Range[ExcelCols[i]];
+                        oRange.EntireColumn.AutoFit();
+                        oRange.Style();
+                        i++;
+                    } while ((i == (colCount - 3)) || (i < 9));
+
+
+                    oSheet = null;
+                    oRange = null;
+                    oWB.SaveAs(FilePath, Excel.XlFileFormat.xlWorkbookDefault,
+                                System.Reflection.Missing.Value, Missing.Value, Missing.Value, Missing.Value,
+                                Excel.XlSaveAsAccessMode.xlExclusive,
+                                Missing.Value, Missing.Value, Missing.Value,
+                                Missing.Value, Missing.Value);
+                    //oWB.Save();
+                    //oWB.Close(true, System.Reflection.Missing.Value, System.Reflection.Missing.Value);
+                    //oXL.Quit();
+                }
+
+            }
+            catch (Exception e)
+            {
+                LogProcess olog = new LogProcess();
+                olog.Log(e.Source);
+                olog.Log(e.Message);
+                olog.LogDispose();
+                //MessageBox.Show(" Message from Excel method  " + e.Message); 
+            }
+
+        }
+
+    }
+
+
+    static class Program
+    {
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form1());
+
+            
+
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+        }
+    }
+}

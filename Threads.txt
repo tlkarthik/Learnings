@@ -1,0 +1,109 @@
+// Threads.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <thread>
+using namespace std;
+
+void f1()
+{
+	for (int i = 0; i < 10; i++)
+	{
+		cout << "In f1 : " << i << endl;
+	}
+}
+
+void f2()
+{
+	thread([]() {
+		for (int i = 0; i < 1000; i++)
+		{
+			cout << "In f2 : " << i << endl;
+		}}).join();
+	/*for (int i = 0; i < 1000; i++)
+	{
+		cout << "In f2 : " << i << endl;
+	}*/
+
+}
+
+class Factor
+{
+public:
+	Factor()
+	{
+		cout << "In constructor " << endl;
+	}
+	/*void operator()()
+	{
+		for (int i = 0; i < 100; i++)
+		{
+			cout << "In factor : " << i <<" "<< endl;
+		}
+	}*/
+	void operator()(string &m)
+	{
+		for (int i = 0; i < 100; i++)
+		{
+			cout << "In factor : " << i <<" "<<m.c_str()<<" get id : "<< this_thread::get_id()<< endl;
+		}
+	}
+
+private:
+
+};
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	Factor f; //calls constructior
+	//Factor f1(); throws compilation error whether default constructor is defined or not.  whether () operator defined or not
+	Factor(); // also calls constructor. Not the () opeartor
+	string ds = "dfghjk";
+	f(ds);//callls operator (). Throws compilation error if () operator is not deffined
+
+	string s = "ghjk";
+	thread ftr1 ((Factor()),s); //althougt this is by ref, in threads it will by value only 
+	thread ft2((Factor()), ref(s)); //explicit use of ref will only update the value by Ref in threads
+	thread ft3((Factor()), move(s)); //move semantics usage is the most efficient in calling threads. It simplyu moves data from parent thread to child thread
+
+	///thread ft4 = ft2; throws compialton erro
+	thread ft4 = move(ft2); // u can only move. cant be copied
+	cout  << " get id " << ft4.get_id();
+
+	cout<<endl<<"ltk con : "<< thread::hardware_concurrency();
+	////thread t1(f1);
+	//thread t2(f2);
+	////t2.join();	//for (int i = 0; i < 10; i++)
+	//{
+	//	cout << "In main : " << i << endl;
+	//for
+	///*f2();
+	//try{
+	//	i (int 0 = i //}; < 10; i++)
+	//	{
+	//		cout << "In main : " << i << endl;
+	//	}
+	//}
+	//catch (...){ 
+	//	t1.join(); }*/
+
+	////t1.join();
+	//t2.join();
+
+	//Jist of the above pgm is, 
+	//1. Allways take a call to either join the 2T to main thread at the end or detach it from main thread
+	//such that it will work independently.
+	//2. If if MT do not get any kind of information about the children thread by the time it leaves the main program then it will assert.
+	//Work around is allways use the method in MT in Trycatch block
+
+	//Method - 2 To handle above situation is through RAII
+	//Using RAII =>resource acquisation in initialising
+	//It means to wrap around a class. And in the destrautor of the class call Join on the thread
+	// Wrapper w(t1);
+	//~ Wraaper() w(t1.join());
+
+	
+	return 0;
+}
+

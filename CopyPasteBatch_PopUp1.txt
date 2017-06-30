@@ -1,0 +1,152 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace CopyPasteBatch
+{
+    public partial class PopUp1 : Form
+    {
+        public List<string> listview2_coll;
+        public Dictionary<string, string> m_selectedFolders ;
+        public Dictionary<string, string> m_FromFolders;
+
+        public PopUp1()
+        {
+            InitializeComponent();
+            this.listview2_coll = new List<string>();
+            this.ShowFullFilePath.Checked = false;
+            m_selectedFolders = new Dictionary<string, string>();
+            m_FromFolders = new Dictionary<string, string>();
+        }
+
+        private void PopUp_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            DialogResult dr = fopd.ShowDialog();
+            if (dr == DialogResult.OK)
+            {
+                this.textBox1.Text = fopd.SelectedPath;
+                DirectoryInfo di = new DirectoryInfo(fopd.SelectedPath);
+                DirectoryInfo[] files = di.GetDirectories();
+                this.listView1.Items.Clear();
+                m_selectedFolders.Clear();
+                foreach (var file in files)
+                {
+                    m_selectedFolders.Add(file.Name, file.FullName);
+                    ListViewItem lvi;
+
+                    if (!ShowFullFilePath.Checked)
+                        lvi = new ListViewItem(file.Name);
+                    else
+                      lvi = new ListViewItem(file.FullName);
+
+                    this.listView1.Items.Add(lvi);
+                }
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in this.listView1.SelectedItems)
+            {
+                String found_value = this.listview2_coll.Find((T) => { return (T.Equals(item.Text) ? true : false); });
+                if (found_value==null)
+                {
+                    item.Selected = true;
+                    item.Focused = true;
+                    this.listview2_coll.Add(item.Text);
+                    this.listView2.Items.Add(item.Text, 0);
+                } 
+            }
+            Fill_ListView2();
+            //listView1.Items.Cast<ListViewItem>().Where(T => T.Selected).Select(T => T.Index).ToList().ForEach(T => {
+            //    ListViewItem  lvi = new ListViewItem(T.ToString());
+            //    listView2.Items.Add(lvi);
+            //    listView1.Items.RemoveAt(T);
+            //});
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in this.listView2.SelectedItems)
+            {
+                this.listView2.Items.Remove(item);
+                m_FromFolders.Remove(item.Text);
+            }
+        }
+
+        internal void ShowItems()
+        {
+           
+        }
+
+        private void ShowFullFilePath_CheckStateChanged(object sender, EventArgs e)
+        {
+            this.listView1.Items.Clear();
+            this.listView2.Items.Clear();
+            ListViewItem lvi;
+            if (ShowFullFilePath.Checked)
+            {
+                foreach (var kvp in m_selectedFolders)
+                {
+                    lvi = new ListViewItem(kvp.Value);
+                    this.listView1.Items.Add(lvi);
+                }
+
+                foreach (var item in m_FromFolders)
+                {
+                    lvi = new ListViewItem(item.Value);
+                    this.listView2.Items.Add(lvi);
+                }
+            }
+            else if (!ShowFullFilePath.Checked)
+            {
+                foreach (var kvp in m_selectedFolders)
+                {
+                    lvi = new ListViewItem(kvp.Key);
+                    this.listView1.Items.Add(lvi);
+                }
+
+                foreach (var item in m_FromFolders)
+                {
+                    lvi = new ListViewItem(item.Value);
+                    this.listView2.Items.Add(lvi);
+                }
+            }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            Fill_ListView2();
+        }
+
+        private void Fill_ListView2()
+        {
+            m_FromFolders.Clear();
+            foreach (ListViewItem item in this.listView2.Items)
+            {
+                if (ShowFullFilePath.Checked)
+                {
+                    if (m_selectedFolders.ContainsValue(item.Text))
+                        m_FromFolders.Add(m_selectedFolders.FirstOrDefault(x => x.Value.Contains(item.Text)).Key, item.Text);
+                }
+                else if (!ShowFullFilePath.Checked)
+                {
+                    if (m_selectedFolders.ContainsKey(item.Text))
+                        m_FromFolders.Add(item.Text, m_selectedFolders[item.Text]);
+                }
+            }
+        }
+    }
+}

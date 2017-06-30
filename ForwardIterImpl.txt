@@ -1,0 +1,53 @@
+// ConsoleApplication3.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+using namespace std;
+#include <vector>
+#include <tuple>
+#include <algorithm> 
+
+bool myfunction(int i, int j) {
+	return (i == j);
+}
+
+template <class ForwardIterator>
+ForwardIterator Unique(ForwardIterator first, ForwardIterator last)
+{
+	if (first == last) return last;
+
+	ForwardIterator result = first;
+	while (++first != last)
+	{
+		if (!(*result == *first))  // or: if (!pred(*result,*first)) for version (2)
+			*(++result) = *first;
+	}
+	return ++result;
+}
+
+int main()
+{
+
+	vector<tuple<string, string, string>> vc;
+	vc.push_back(std::make_tuple("z", "a", "b"));
+	vc.push_back(std::make_tuple("abbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "a", "b"));
+	vc.push_back(std::make_tuple("a", "a", "b"));
+
+	sort(vc.begin(), vc.end(), [](tuple<string, string, string> const &t1, tuple<string, string, string> const &t2)
+		{ return get<0>(t1) < get<0>(t2);
+		});
+
+	for (auto &var : vc)
+	{
+		string s1 = get<0>(var);
+		string s2 = get<1>(var);
+		string s3 = get<2>(var);
+
+		cout << &s1 << ",\t" << &s2 << ",\t" << &s3 << "\n";
+	}
+
+	getchar();
+	return 0;
+}
+

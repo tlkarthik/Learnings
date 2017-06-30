@@ -1,0 +1,125 @@
+// CPU Usage.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "CPU Usage.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+#include <cstdio>
+#include <windows.h>
+#include <tlhelp32.h>
+#include <tuple>
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <algorithm>
+#include <ppl.h>
+#include <concurrent_vector.h>
+#include <ppltasks.h>
+#include <future>
+#include <memory>
+#include <string>
+#include <array>
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+using namespace concurrency;
+
+class ProcessorTimer
+{
+public:
+	ProcessorTimer(){}
+	
+	ProcessorTimer(HANDLE &_h) :h{_h}{::GetProcessTimes(h, &ft_[3], &ft_[2], &ft_[1], &ft_[0]);}
+
+	std::tuple<double, double> stop(HANDLE &_h)
+	{
+		::GetProcessTimes(h, &ft_[5], &ft_[4], &ft_[3], &ft_[2]);
+		ULARGE_INTEGER u[4];
+		for (size_t i = 0; i < 4; ++i)
+		{
+			u[i].LowPart = ft_[i].dwLowDateTime;
+			u[i].HighPart = ft_[i].dwHighDateTime;
+		}
+		double user = (u[2].QuadPart - u[0].QuadPart) / 10000000.0;
+		double kernel = (u[3].QuadPart - u[1].QuadPart) / 10000000.0;
+		return std::make_tuple(user, kernel);
+	}
+private:
+	FILETIME ft_[6];
+	HANDLE h{};
+};
+
+void GetProcessByName(vector<tuple<PCWSTR, bool>> &v_Processes)
+{
+	int iTestCnt{ 0 }, indx{ 0 };
+	wstring proc_name{};
+	vector<tuple<ProcessorTimer *, HANDLE >>v_h_pt{};
+	vector<task<void>> tasks{};
+	tasks.resize(v_Processes.size());
+	do
+	{
+		HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+		PROCESSENTRY32 process;
+		ZeroMemory(&process, sizeof(process));
+		process.dwSize = sizeof(process);
+
+		if (Process32First(snapshot, &process)){
+			do{
+				for_each(begin(v_Processes), end(v_Processes), [&](tuple<PCWSTR, bool> &p){
+					if (!(get<1>(p)) && (wcscmp(process.szExeFile, get<0>(p)) == 0)){
+						HANDLE ph = OpenProcess(PROCESS_ALL_ACCESS, FALSE, process.th32ProcessID);
+						v_h_pt.emplace_back(move(make_tuple(new ProcessorTimer(ph), ph)));
+						get<1>(p) = true;
+						indx = iTestCnt;
+						proc_name = get<0>(p);
+						tasks[indx] = create_task([&v_h_pt, indx, proc_name] {
+							int temp = indx;
+							DWORD a = WaitForSingleObject(get<1>(v_h_pt[temp]), INFINITE);
+							std::tuple<double, double> tup = get<0>(v_h_pt[temp])->stop(get<1>(v_h_pt[temp]));
+							wcout << L"Proc : " << proc_name << "[" << temp<<L"]" << L" = " << get<0>(tup)+get<1>(tup) << endl;
+						});
+						iTestCnt++;
+					}
+				});
+			} while (Process32Next(snapshot, &process));
+		}
+		CloseHandle(snapshot);
+		if (iTestCnt == v_Processes.size()){
+			when_all(begin(tasks), end(tasks)).wait();
+			break;
+		}
+	} while (true);
+}
+
+void _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	AfxMessageBox(_T("ff"));
+
+
+	int first_time = 0;
+	do{
+		if (first_time == 0){
+			cout <<"Invoke your Exes"<< endl;
+			vector<tuple<PCWSTR, bool>>v_Processes{ make_tuple(L"SPRB.exe", false), make_tuple(L"VisLabelDBBuilder.exe", false)/*, make_tuple(L"TestCPUUsageExe1.exe", false)*/ };
+			GetProcessByName(v_Processes);
+			first_time++;
+		}
+		else{
+			cout << "\nEnter 'e' for exiting or any key for continuing \n";
+			int input = getchar();
+			if (input == 101 || input == 69)
+				break;
+			else{
+				vector<tuple<PCWSTR, bool>>v_Processes{ make_tuple(L"SPRB.exe", false), make_tuple(L"VisLabelDBBuilder.exe", false)/*, make_tuple(L"TestCPUUsageExe1.exe", false)*/ };
+				GetProcessByName(v_Processes);
+			}
+		}
+	} while (true);
+}

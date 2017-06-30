@@ -1,0 +1,115 @@
+// SharedMemorey1.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "SharedMemorey1.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+#include <vector>
+#include <set>
+#include <algorithm>
+#include <tuple>
+#include <Windows.h>
+#include <unordered_map>
+// The one and only application object
+#include <map>
+CWinApp theApp;
+
+using namespace std;
+
+#include <stdio.h>
+#include <conio.h>
+#include <string>
+
+#define BUF_SIZE 256
+
+//HANDLE hMessageEmptiedEvent;HANDLE hMessageEmptiedEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, _T("MessageEmptied"));
+//HANDLE hMessageSentEvent;
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	//HANDLE hMessageEmptiedEvent = CreateEvent(NULL, FALSE, TRUE, _T("MessageEmptied"));
+	//HANDLE hMessageSentEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageSent"));
+
+	HANDLE hMessageEmptiedEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageEmptied"));
+	HANDLE hMessageSentEvent = CreateEvent(NULL, FALSE, TRUE, _T("MessageSent"));
+
+	CString szName = TEXT("Local\\MyFileMappingObject");
+	//TCHAR szName[] = TEXT("Global\\MyFileMappingObject");
+	//TCHAR szMsg[] = TEXT("Message from first process.tlk ");
+	
+	HANDLE hMapFile;
+	LPCTSTR pBuf;
+	unordered_map<int, CString> mymap;
+	mymap[1] = _T("a1");
+	mymap[2] = "a2";
+	mymap[3] = "a3";
+	mymap[1] = _T("a14");
+	mymap[4] = "a4";
+	mymap[3] = "a33";
+	mymap[3] = "a34";
+
+	if (mymap[3] == "a34")
+	{
+		auto a =mymap[6];
+	}
+
+	mymap.size();
+	wstring buffer;
+	for (const auto& n : mymap) 
+		buffer.append(to_wstring(n.first) + L" = "+ L"/");
+	
+
+	//wcout << buffer;
+//	TCHAR szMsg[] = TEXT("Message from first process.tlk ");
+	hMapFile = CreateFileMapping(
+		INVALID_HANDLE_VALUE,    // use paging file
+		NULL,                    // default security
+		PAGE_READWRITE,          // read/write access
+		0,                       // maximum object size (high-order DWORD)
+		BUF_SIZE,               // maximum object size (low-order DWORD)
+		szName.GetBuffer());                 // name of mapping object
+
+	if (hMapFile == NULL)
+	{
+		_tprintf(TEXT("Could not create file mapping object (%d).\n"),
+			GetLastError());
+		return 1;
+	}
+	pBuf = (LPTSTR)MapViewOfFile(hMapFile,   // handle to map object
+		FILE_MAP_ALL_ACCESS, // read/write permission
+		0,
+		0,
+		BUF_SIZE);
+
+	if (pBuf == NULL)
+	{
+		_tprintf(TEXT("Could not map view of file (%d).\n"),
+			GetLastError());
+
+		CloseHandle(hMapFile);
+
+		return 1;
+	}
+	char    * ct = ("8032");
+	__int64 t = _atoi64(ct);
+	
+	//CopyMemory((PVOID)pBuf, buffer.data(), (_tcslen(buffer.data()) * sizeof(wstring)));
+
+	//WaitForSingleObject(hMessageEmptiedEvent, INFINITE);
+	// Copy the data into the shared buffer
+	auto a = buffer.size() * sizeof(std::wstring::traits_type::char_type);
+	CopyMemory((PVOID)pBuf, buffer.data(), (_tcslen(buffer.data()) * sizeof(wstring)));
+	// Signal the other process that data is ready
+	SetEvent(hMessageSentEvent);
+	WaitForSingleObject(hMessageEmptiedEvent, INFINITE);
+	//_getch();
+
+	UnmapViewOfFile(pBuf);
+
+	CloseHandle(hMapFile);
+
+	return 0;
+}

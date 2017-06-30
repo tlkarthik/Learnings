@@ -1,0 +1,77 @@
+// MemGranSharedMem2.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "MemGranSharedMem2.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+
+#include <windows.h>
+#include <stdio.h>
+#include <conio.h>
+#include <tchar.h>
+#pragma comment(lib, "user32.lib")
+
+#define BUF_SIZE 256
+#include <ppl.h>
+using namespace Concurrency;
+#include  <vector>
+#include  <string>
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	HANDLE hMessageEmptiedEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageEmptied"));
+	HANDLE hMessageSentEvent = CreateEvent(NULL, FALSE, FALSE, _T("MessageSent"));
+	HANDLE hMultipleMessagesSent = CreateEvent(NULL, FALSE, FALSE, _T("MultipleMessagesSent"));
+
+	HANDLE hBuilderReceiverHandles[] = { hMessageSentEvent, hMultipleMessagesSent };
+
+	DWORD dwWaitResult = WaitForMultipleObjects(_countof(hBuilderReceiverHandles), hBuilderReceiverHandles, FALSE, INFINITE);
+	if ((dwWaitResult - WAIT_OBJECT_0) == 0)
+	{
+		TCHAR szName[] = TEXT("Local\\MyFileMappingObject");
+		HANDLE hMapFile;
+		LPCTSTR pBuf;
+
+		hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, szName);
+		pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, BUF_SIZE);
+
+
+		MessageBox(NULL, pBuf, TEXT("Process2"), MB_OK);
+
+		SetEvent(hMessageEmptiedEvent);
+		UnmapViewOfFile(pBuf);
+		CloseHandle(hMapFile);
+	}
+	else if ((dwWaitResult - WAIT_OBJECT_0) == 1){
+		int i = 1;
+		CString cBUF =_T( "");
+		while (true)
+		{
+			wstring szName = L"Local\\MyFileMappingObject_" + to_wstring(i);
+
+			HANDLE hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, szName.data());
+			if (!hMapFile) 
+				break;
+			LPCTSTR pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, BUF_SIZE);
+			cBUF.Append((CString)pBuf);
+			UnmapViewOfFile(pBuf);
+			CloseHandle(hMapFile);
+			i++;
+		}
+		SetEvent(hMessageEmptiedEvent);
+	}
+
+	//WaitForSingleObject(hMessageSentEvent, INFINITE);
+	return 0;
+}
+

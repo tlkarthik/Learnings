@@ -1,0 +1,136 @@
+// LambdasC++.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <algorithm>
+#include <vector>
+#include <memory>
+#include <list>
+#include <numeric>
+#include <random>
+using namespace std;
+class SumUP
+{
+	
+public:
+	int & m_sum;
+	SumUP( int& sum) : m_sum{ sum }{}; //references, const values are intialised using initialliser list only, class objects. else throws compilation error
+
+	int  operator()( int  a) //for functors
+	{
+		return m_sum += a;
+	}
+
+	SumUP& operator=(const SumUP &sum)
+	{
+		this->m_sum = sum.m_sum;
+		return *this;
+	}
+	SumUP & operator+(const SumUP &sum)
+	{
+		this->m_sum += sum.m_sum;
+		return *this;
+	}
+
+	int count(){ return m_sum; };
+
+private:
+
+};
+
+class IsmUltiple
+{
+public:
+	int m_a;
+	IsmUltiple(int a) : m_a{ a }{};
+	bool operator()(const int &a)
+	{
+		return (m_a%a == 0);
+	}
+
+
+private:
+
+};
+
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	vector<int>v={1,2,2,4,56,10,15000,20000,56489,897};
+	int it = 2;
+	/*cout << "typeid : " << typeid(it).name() << "\n";
+	SumUP var = SumUP(v[it]);
+	for (size_t i = 0; i < v.size(); i++)
+	{
+		var  = var+ SumUP(v[i]);
+	}
+	cout << "var is : " << var.m_sum << "\n";*/
+
+	for_each(v.begin(), v.end(), SumUP(it));
+	for_each(v.begin(), v.end(), [&](int x)
+	{
+		return it += x;
+	});
+	
+	auto a = count_if(v.begin(), v.end(), [=](int a)->bool 
+	{
+		cout << "Value is : " << a << "\n";
+		return !(a% it == 0); 
+	});
+	cout << "count for multiple : " << a << "\n";
+	cout << "for_each : " << it<<"\n";
+
+	std::list<int> l(10);
+	std::iota(l.begin(), l.end(), -4);
+	for (auto n : l) std::cout << n << ' ';
+	std::cout << '\n';
+
+	std::vector<std::list<int>::iterator> vecItr(l.size());
+	std::iota(vecItr.begin(), vecItr.end(), l.begin());
+	for (auto i : vecItr)
+		std::cout << *i << ' ';
+	std::cout << '\n';
+
+	vector<shared_ptr<int>>s_v, ex;
+	s_v.push_back(make_shared<int>(1));
+	s_v.push_back(make_shared<int>(2));
+	s_v.push_back(make_shared<int>(3.45));
+	
+
+	/*auto co = copy_if(s_v.begin(), s_v.end(), ex.begin(), [](int g)->bool
+	{
+		shared_ptr<int> temp;
+		if (g % 2 == 0)
+			temp = (g);
+		return temp.get();
+	});*/
+
+//Unique_ptr always creates single instance to the class. 
+//=> unique_ptr<Dog> pd1 (new Dog("D1"));
+//=> unique_ptr<Dog> pd2 (new Dog("D2"));
+//pd1->bark(); //calls D1
+//pd2->bark(); //callls D2
+//but pd1=pd2; //Throws compilation error. Since, unique ptr hold single instance
+//But pd1= std::move(pd2);  //works since, owner ship of pd2 goes to pd1
+//pd1->bark(); //calls dog D1
+
+//DifferenceSS      , ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+//1. Unique ptr returns raw ptr and looses its owner ship
+//=> if pd1.release(); is called, then pd1 destructor is not released when pd1 scope is lost. Explicilty devoloper has to do
+//=>if pd1.reset(new Dog("D3")); // then d1 will be destroyed and d3 will be created. Thease line implies ONLY SINGLE INSTANCE OI THE OBJECT IS HOLD
+//2. It need not have deleter like shared ptr allways. It automatically deletes arrays
+
+//Unlike Shared_Ptr behaves almost like normal smart pointer.
+//It must and should declare auto deleter
+//It will also return raw pointer ie.. get function. Bu shared ptr although it clears
+//It will retain the ownership
+
+
+
+
+
+
+	return 0;
+}
+

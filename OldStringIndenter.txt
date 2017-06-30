@@ -1,0 +1,61 @@
+#include stdafx.h
+//#include <tuple>
+//#include <vector>
+//#include <string>
+//#include <fstream>
+//
+//using logging_data = std::vector<std::tuple<long, std::string, std::string, std::string>>;
+//void dump_data_into_file(const logging_data& log_data_col);
+//std::string indent_it(const std::string& string_data, int intnet, bool end = false);
+//
+//int main()
+//{
+//	logging_data log_data_col;
+//	log_data_col.push_back(std::make_tuple(1, "hi", "hihiohoi", "kjkljgg"));
+//	log_data_col.push_back(std::make_tuple(12, "hiiiiihgfh", "hihiohoigh", "kjkljfgh"));
+//	log_data_col.push_back(std::make_tuple(155, "hiiiiihh", "hihiohoighgfh", "kj"));
+//	log_data_col.push_back(std::make_tuple(14444, "hiiiiighgh", "hihiohoi", "kjkljdfgf"));
+//	log_data_col.push_back(std::make_tuple(14, "hiiiiigh", "hihiohoighhh", "kjkljfgg"));
+//	dump_data_into_file(log_data_col);
+//}
+//
+//void dump_data_into_file(const logging_data& log_data_col)
+//{
+//	std::fstream file_writer;
+//	file_writer.open("C:\\Temp\\log.log", std::ios::out | std::ios::app);
+//
+//	long item_0 = 1000; // index: 4 places hence 1000
+//	std::size_t size_item_1 = 7; // Rad Key
+//	std::size_t size_item_2 = 11; // String Name
+//	std::size_t size_item_3 = 14; // Binding Method
+//	for (const auto& Itr : log_data_col){
+//		item_0 = std::get<0>(Itr) > item_0 ? std::get<0>(Itr) : item_0;
+//		size_item_1 = std::get<1>(Itr).size() > size_item_1 ? std::get<1>(Itr).size() : size_item_1;
+//		size_item_2 = std::get<2>(Itr).size() > size_item_2 ? std::get<2>(Itr).size() : size_item_2;
+//		size_item_3 = std::get<3>(Itr).size() > size_item_3 ? std::get<3>(Itr).size() : size_item_3;
+//	}
+//	auto size_item_0 = std::to_string(item_0).size();
+//
+//	file_writer << indent_it("Index", size_item_0);
+//	file_writer << indent_it("Rad Key", size_item_1);
+//	file_writer << indent_it("String Name", size_item_2);
+//	file_writer << indent_it("Binding Method", size_item_3, true);
+//	for (const auto& Itr : log_data_col){
+//		file_writer << indent_it(std::to_string(std::get<0>(Itr)), size_item_0);
+//		file_writer << indent_it(std::get<1>(Itr), size_item_1);
+//		file_writer << indent_it(std::get<2>(Itr), size_item_2);
+//		file_writer << indent_it(std::get<3>(Itr), size_item_3, true);
+//	}
+//
+//	if (file_writer.is_open()) file_writer.close();
+//}
+//
+//std::string indent_it(const std::string& string_data, int indent_size, bool end)
+//{
+//	std::string return_string = string_data;
+//	int remain_space = indent_size - return_string.size();
+//	for (int i = 0; i < remain_space; ++i)
+//		return_string += " ";
+//	return_string += end ? "\n" : "\t";
+//	return return_string;
+//}

@@ -1,0 +1,52 @@
+﻿// titibits2.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <string>
+#include <iostream>
+using namespace std;
+
+int  f1(char *s){ return 1; }
+int*  f2(char *s){ int j; return &j; }
+int _tmain(int argc, _TCHAR* argv[])
+{
+	int j = 5;
+	int * pi = &j; //pointer to int
+	int dp = *pi;
+
+	int ** ppi = &pi; //pointer to int
+	int dpp = **ppi;
+	int v[] = { 1, 2, 3, 4 };
+	int *p1 = v; // pointer to initial element (implicit conversion)
+	int *p2 = &v[0];// pointer to initial element
+	int dfv = ++(*v);
+	int *p3 = (v+2);// pointer to one-beyond-last element
+	*(v + 2) = 5;
+	int p4 = (*p1+12);
+
+	//int(*fp)(char*) = f1; // pointer to function taking a char* argument; returns an int
+	//int* (*f)(char*) =f2; //function taking a char* argument; returns a pointer to int
+
+	//int x = 10;
+	//int& rp= x;
+	////int &*ptr1 = ptr;
+	
+	string s = R"TEST(hi
+					hello)TEST"; //raw string
+	wstring w = L"";
+	wstring wr = LR"()";
+	cout << s.data();
+
+
+	//"folder\\file" //implementation character set string
+	//	R"(folder\file)" // implementation character raw set string
+	//	u8"folder\\file" // UTF-8 string
+	//	u8R"(folder\file)" // UTF-8 raw str ing
+	//	u"folder\\file" // UTF-16 string
+	//	uR"(folder\file)" //UTF-16 raw str ing
+	//	U"folder\\file" // UTF-32 string
+	//	UR"(folder\file)" //UTF-32 raw str ing
+
+	return 0;
+}
+

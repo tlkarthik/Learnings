@@ -1,0 +1,69 @@
+// ML.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "ML.h"
+#include "vector"
+#include "memory"
+#include "string"
+
+
+//#ifdef _DEBUG
+//#define DEBUG_NEW new(__FILE__, __LINE__)
+//#define new DEBUG_NEW
+//#endif
+
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+
+
+struct st {
+	int a;
+	string s;
+};
+#define hh "ParentLinkage : %6d %6d %6d %6d"
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	//st o;
+	//o.s = "tss";
+	//o.a = 1;
+
+	const char c[] = "jjjk\0";
+	auto l = strlen(c) / sizeof(c);
+	_CrtSetBreakAlloc(163);
+
+	
+	{
+		__int64 dmrs{};
+		short pParentShort[4]{}, ps[4]{};
+		CString stra =  _T("-253,-26455,0,0");
+		_stscanf_s(stra.GetString(), _T(" %hd,%hd,%hd,%hd"),
+			&pParentShort[0],
+			&pParentShort[1],
+			&pParentShort[2],
+			&pParentShort[3]);
+		
+		__int64 l =* reinterpret_cast<__int64 *>(pParentShort);
+
+		short *p = (short*)&l;
+ 
+		ps[0] = *p++;
+		ps[1] = *p++;
+		ps[2] = *p++;
+		ps[3] = *p;
+		CString csNewLinkage;
+
+		char * s = new char[16];
+		StrCpy(s, "qqqq");
+		delete[] s;
+		s = nullptr;
+	}
+	_CrtDumpMemoryLeaks();
+	
+	return 0;
+}

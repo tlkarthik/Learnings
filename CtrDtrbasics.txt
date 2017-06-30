@@ -1,0 +1,143 @@
+
+#include <iostream>
+
+#define _CRTDBG_MAP_ALLOC
+#ifdef _DEBUG   
+#ifndef DBG_NEW      
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )      
+#define new DBG_NEW   
+#endif
+#endif  // _DEBUG
+#include <stdlib.h>
+#include <crtdbg.h>
+
+
+using namespace std;
+
+class Base
+{
+private:
+	int bp1 = 10;
+	int bp2 = 20;
+
+public:
+	Base(){cout << "In base constructor\n";}
+	~Base(){cout << "In base destructor\n";};
+
+	int bpub1 = 100;
+	int bpub2 = 200;
+	 //virtual void f1(int &a, int &b) = 0;
+	 //virtual void f2(int &a, int &b) = 0;
+	virtual void f3() { cout << "In base f3 vitual \n"; };
+	// virtual void tlk() = 0;
+	 void f4() {cout << "Am in base f4\n"; }
+	 void f5() { cout << "Am in base f5\n"; }
+	 void fb1() { cout << "Am in base f1\n"; }
+
+protected:
+	int bprot = 60;
+};
+
+class d1 : public virtual Base
+{
+public:
+	d1(){cout << "In d1 constructor\n";}
+	~d1(){cout << "In d1 destructor\n";}
+
+	int d1pub1 = 15;
+	//virtual void v1() = 0;
+	void f1(int &a, int &b)
+	{
+		cout << "I am  d1 class function f1 \n";
+		cout << a << "\t" << b << "\n";
+	};
+
+	void f2(int &a, int &b)
+	{
+		cout << "I am  d1 class function f2 \n";
+		cout << a << "\t" << b << "\n";
+	};
+
+	void  f3(){ cout << "I am  d1 class function f3 \n"; };
+	void  f4(){ cout << "I am  d1 class function f4 \n"; };
+	void v2(){ cout << "Am in d1 : v2" << "\n"; }
+private:
+
+};
+class d2 : public  virtual Base
+{
+public:
+	d2(){cout << "In D2 constructor\n";}
+	~d2(){cout << "In d2 destructor\n";}
+
+	int d1pub1 = 15;
+	void f1(int &a, int &b){
+		cout << "I am  d2 class function f1 \n";
+		cout << a << "\t" << b << "\n";
+	};
+
+	void f2(int &a, int &b)
+	{
+		cout << "I am  d2 class function f2 \n";
+		cout << a << "\t" << b << "\n";
+	};
+
+	void  f3(){ cout << "I am  d2 class function f3 \n"; };
+	void v2(){ cout << "Am in d2 : v2" << "\n"; }
+private:
+
+};
+
+class  derived : public  d1,public d2
+{
+
+private:
+	int dp1 = 5;
+	int dp2 = 6;
+	//static int s;
+public:
+	derived(){cout << "In derived constructor\n";}
+	derived(int a){cout << "Am in derived paramenter constructor " << a << "\n";}
+	~derived(){cout << "In derived destructor\n";};
+
+	int dpub1 = 50;
+	int dpub2 = 60;
+
+	void f1(int &a, int &b){
+		cout << "I am  derived class function f1 \n";
+		cout << a << "\t" << b << "\n";
+	};
+
+	void f2(int &a, int &b){
+		cout << "I am  derived class function f2 \n";
+		cout << a << "\t" << b << "\n";
+	};
+
+	void  f3(){ cout << "I am  derived class function f3 \n"; };
+
+	void f4(){cout << "Am in derived f4\n";}
+	void f5(){cout << "Am in derived f5\n";}
+
+
+protected:
+	int dprot = 70;
+
+};
+
+void main()
+{
+	/*_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	int * ptr = new int(5);*/
+	Base b1;
+	d1 D1;
+	b1.f3();
+	Base *bp =  &D1;
+	bp->f5();
+	bp->f3();
+	d1* pD1 = reinterpret_cast<d1*>(bp);
+	pD1->f4();
+	pD1->f3();
+	pD1->fb1();
+
+	getchar();
+}

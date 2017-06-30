@@ -1,0 +1,103 @@
+// TR_viz_Dgn.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+using namespace std;
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+
+struct coord
+{
+	string a,b;
+	coord(string i, string j) {
+		this->a = i;
+		this->b = j;
+	}
+};
+
+
+int glob = 5;
+int getval(int i){ return i; };
+int& getval_r(){ return glob; };
+
+//int square(int x){ return x*x; };
+int square(int &x){ return x*x; };
+int square(int &&x){ return x*x; };
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	int y = 10;
+	square(5);
+	square(y);
+	//Under standing R value , L value & R Value References
+	//Uses 1 ) Move semantics
+	//2 ) Perfect forwarding
+
+	//L values
+	int i = 5; //i Lvalue
+	int &r = i; //here i is Rvalue & r is L value in this context
+	int *pr = &i; //addess of i is identifyable 
+	i = 6; //memorey content is modifyable
+
+	// Summary for L values
+	//L value is locator value.
+	//Which will have an identifyable memorey location
+	//Which is also modifyable in the memorey content
+	//Most variables are L values
+
+	//R Values
+	int q = 5;
+	int j = i + 2; //(i+2) is R val
+	
+	//int *jp = &(i + 2); // error. not identifyable
+	// i+2 = 9; //Error can not aSSIGN different value.  Hence aboev are R values
+
+	//Intersting
+	int v[3];
+	//v+2 is a R value
+	*(v + 2) = 2; //de ference is L value
+	int fr = getval(10); //getval_R is R val
+	//above is not allways
+	getval_r() = 100;
+
+
+
+	// Summary for R values
+	//Thing which is not L is an R value
+
+
+	//References or (l value reference)
+	int e = 5;
+	int &re = e;
+	//int &cre = 5;  Error
+	const int &cre = 5; //Understand as Two steps. Create a Lvalue for 5 and assign to cre
+
+	
+
+	/*cout << getval_L(1545.10);
+	getval_L(1545.10) = 1111;*/
+
+	//vector <coord>p;
+	//p.emplace_back(make_pair(1, 12));
+	//p.emplace_back(make_pair(12, 13));
+	//p.emplace_back(make_pair(13, 18));
+	//p.emplace_back(make_pair(18, 11));
+
+	//p.emplace_back(coord("s1","e1"));
+	//p.emplace_back(coord("s2","e2"));
+	//p.emplace_back(coord("s3","e3"));
+	//p.emplace_back(coord("s4","e4"));
+
+	//for (const auto& itr : p){
+	//	auto i = find_if(p.begin(), p.end(), [&](coord p)
+	//	{
+	//		cout << p.a.data() << " " << p.b.data() << endl;
+	//		return false;
+	//	});
+	//}
+	getchar();
+	return 0;
+}
+

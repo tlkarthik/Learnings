@@ -1,0 +1,98 @@
+﻿namespace LoadPics
+{
+    partial class Form1
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            this.Images = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.list_view_Gallery = new System.Windows.Forms.ListView();
+            this.lv = new System.Windows.Forms.ListView();
+            this.button1 = new System.Windows.Forms.Button();
+            this.Images_ = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SuspendLayout();
+            // 
+            // Images
+            // 
+            this.Images.Width = 175;
+            // 
+            // lstGallery
+            // 
+            this.list_view_Gallery.Dock = System.Windows.Forms.DockStyle.Left;
+            this.list_view_Gallery.Location = new System.Drawing.Point(0, 0);
+            this.list_view_Gallery.Name = "lstGallery";
+            this.list_view_Gallery.Size = new System.Drawing.Size(300, 685);
+            this.list_view_Gallery.TabIndex = 2;
+            this.list_view_Gallery.UseCompatibleStateImageBehavior = false;
+            // 
+            // lv
+            // 
+            this.lv.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.Images_});
+            this.lv.Dock = System.Windows.Forms.DockStyle.Right;
+            this.lv.Location = new System.Drawing.Point(1053, 0);
+            this.lv.Name = "lv";
+            this.lv.Size = new System.Drawing.Size(121, 685);
+            this.lv.TabIndex = 3;
+            this.lv.UseCompatibleStateImageBehavior = false;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(610, 297);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "button1";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // Form1
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1174, 685);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.lv);
+            this.Controls.Add(this.list_view_Gallery);
+            this.Name = "Form1";
+            this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.ColumnHeader Images;
+        private System.Windows.Forms.ListView list_view_Gallery;
+        private System.Windows.Forms.ListView lv;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ColumnHeader Images_;
+
+
+    }
+}
+

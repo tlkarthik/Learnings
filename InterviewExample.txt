@@ -1,0 +1,293 @@
+// InterviewExample.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <iostream>
+#include <iomanip>
+#include <string>
+using namespace std;
+
+string & s1(int a)
+{
+	static string s2 = (a > 0) ? "true" : "else";
+	cout << "&s2 : " << &s2<<'\n';
+	return s2;
+}
+
+int &m2(int &a)
+{
+	cout << "&a : " << &a << '\n';
+	a = a + 50;
+	cout << "a : " << a << '\n';
+	return a;
+}
+
+void m3(int a)
+{
+
+}
+
+class aaa
+{
+public:
+	int x, y;
+	aaa() : x{ 0 }, y{ 0 } {};
+	aaa(int a, int b) : x{ a }, y{ b } {};
+
+
+	void operator()(const int  a,const int  b)
+	{
+		this->x = a;
+		this->y = b;
+	}
+
+	int operator + (const aaa & a ) 
+	{
+		return a.x;
+	}
+
+
+	friend ostream &operator <<( ostream & out, const aaa & obj)
+	{
+		out << " x = " << obj.x << ", y = " << obj.y << '\n';
+		return out;
+	}
+};
+
+class test
+{
+	int a;
+	
+public:
+	 test(int x) :a{ x}{};
+	 test& operator=(const test & t)
+	 {
+		 this->a = t.a;
+		 return *this;
+	 }
+
+	 test(const test & t)
+	 {
+		 this->a = t.a;
+	 }
+
+	int getdata()
+	{
+		return a;
+	}
+
+};
+
+class derived :public test
+{
+	int getdata()
+	{
+		return a;
+	}
+	int a;
+};
+
+class b_boa
+{
+private:
+	int m_a;
+public:
+	int get_a(){ return m_a; };
+	b_boa() :m_a{ 0 }{}
+
+	int f1(){ return 0; };
+
+	//Pre fix approaches base = ++base
+	//Since base can point to derived it works. base = ++derived
+	//Solution : 1
+	//friend b_boa & operator++( b_boa &b)
+	//{
+	//	b.m_a++;
+	//	return b;
+	//}
+
+	//Solution : 2
+	b_boa & operator++()
+	{
+		this->m_a++;
+		return  *this;
+	}
+
+	//Post fix
+	//Solution as a member function
+	//b_boa & operator++(int )
+	//{
+	//	this->m_a++;
+	//	return  *this;
+	//}
+	//Solution by iusing friend funtion
+	friend b_boa & operator++(b_boa &b, int)
+	{
+		b.m_a++;
+		return b;
+	}
+};
+
+class d_boa : public b_boa
+{
+public :
+	int f1(){ return 1; };
+
+	
+};
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	b_boa a;
+	d_boa b ;
+
+	cout <<"BOA : "<< 1&&0 ;
+	a = ++b;
+	a = b++;
+	cout << endl<<"++ : "<< a.get_a() << endl;
+ 	cout << 25u - 50;
+	string w="aa";
+	for (int i = 1; i <= 4; i++)
+	{
+		w.insert(0, to_string(i));
+		cout << setw(4) << setfill('-') << w.c_str() << endl;
+	}
+
+	for (int i = 4; i >1; --i)
+	{
+		w=w.substr((w.length()+1) - i );
+		cout << setw(4) << setfill('-') << w.c_str() << endl;
+	}
+
+	//cout << "&s1(2) : " << s1(2).c_str() << '\n'; //Fails to excute at run time if &s1(int) is there 
+
+	////Normal & m1(){int a ; return a ;---} return the address of 'a' directly
+	////so if u use &m1(), then u get the address of a.
+
+	//
+	//int s = 10;
+	//cout << "&s : " << &s << '\n';
+	//int& rs = m2(s);
+	//m2(s) = 7;  //This is now equivalent to 's'. so s is initialised to 7 agail. So where ever we are retrning reference => we are directly declaring with variable. & m1() =>&s
+
+	//cout << "&m2(s) : " << &m2(s) << '\n';
+	//cout << "rs : " << rs << '\n';
+	//cout << "&rs : " << &rs << '\n';
+
+
+	vector<int> v(4);
+	//v.clear();
+	v.emplace_back(1);
+	v.emplace_back(2);
+	v.reserve(10000);
+	cout << "size : " << v.size() << '\n';
+	cout << "capc : " << v.capacity() << '\n';
+	
+	////Size function allocates the total vector size and iinittialise with some values i think
+	////Clear deletes them allothouh not initialised explicitly
+	////Capacity is the actual size of the vector independint of clear fucntion
+	////size is dependent of clear() fn.
+
+	vector<int>v_boa{ 1, 3, 2, 4, 6, 8, 9, 10, 12 };
+	//for_each(v_boa.cbegin(), v_boa.cend(), [&](int a)
+	//{
+	//	if (a%2==0)
+	//	{
+	//		v_boa.erase(a);
+	//	}
+	//});
+
+	//removes all divisable by 2
+	v_boa.erase(std::remove_if(v_boa.begin(), v_boa.end(), [&](int a)
+	{
+		return (a % 2 == 0);
+	}), v_boa.end());
+
+
+	//Function pointers
+	string&(*ptr_s1)(int) = s1;
+	cout<<"Funct_ptr : "<< ptr_s1(5).c_str()<<'\n';
+	void(*ptr_m3)(int) = m3;
+
+	int&(*ptr_m2)(int &) = m2;
+	int p = 8;
+	cout<<"Ptr_m2 : "<< ptr_m2(p)<<'\n';
+
+	map<int, aaa> m1;
+	aaa a1(1,2), a2(2,3),a3(8,9),a4(0,50);
+
+	m1[11] = a1;
+	m1.insert(pair<int, aaa>(22, a2));
+	m1.insert(map<int, aaa>::iterator::value_type(3, a3));
+	m1.insert(pair<int, aaa>(4, aaa(15, 15)));
+	m1[5] = a4;
+
+	for (map<int, aaa>::iterator it = m1.begin(); it != m1.end(); ++it)
+	{
+		cout << "First : " << (*it).first << ", Second : " << (*it).second << '\n';
+	}
+	
+	vector<aaa>v_a;
+	
+
+	for_each(m1.cbegin(), m1.cend(), [](const pair<int , class aaa> &it) {cout << "for_each First : " << (it).first << ", Second : " << (it).second << endl; });
+	
+	for_each(m1.cbegin(), m1.cend(), [&](const pair<int, class aaa> &i_a)
+	{
+		v_a.emplace_back(i_a.second);
+	});
+
+	sort(v_a.begin(), v_a.end(), []( aaa & o1,  aaa & o2) {return o1.x > o2.x ; });
+
+
+	//multimap<int, char>mulmap;
+	//mulmap.insert(make_pair(11, 's'));
+	//mulmap.insert(make_pair(121, 'ss'));
+	//mulmap.insert(make_pair(3, 'ww'));
+	//mulmap.insert(make_pair(5, 'qq'));
+	//mulmap.insert(make_pair(8, 't'));
+	//mulmap.insert(make_pair(9, 'i'));
+
+	//auto er = mulmap.equal_range('ww');
+	//multimap<int, char>::iterator a = mulmap.find(1);
+	//
+
+	//for each (auto var in mulmap)
+	//{
+	//	cout << "Mul : " << var.first << ", sec : " << var.second << endl;
+	//}
+
+
+
+	//If, no constr is defineed then normally we can instantiate the object with out iniillising the object
+	//If default const is provided also no problem, u can create objects with out initialisng
+	//But if paramet ctr is provided and no default ctr is provided then it explicitly ask for 
+	//objects to initialise with values beloging to the parameterised ctr.
+	//After initialisng, by default t1=2,t1=t2,t1(t2) will work along with t1(2).
+	//Defgault copy constructor also works. like test tc(t1), test tc2 = tc1;
+
+	// Note test tc1 = tc2 & test tc1(tc2) calls default copy coonstructor
+	//But tc1 = tc2 calls '=' operator & tc2(tc2) in different lines calls copy constructor
+	test t2 = 22; //call parameried ctr
+	
+	test t1 (2); //calls para ctr
+
+	t2 = 110; //calls para ctr and '=' operator  //Although = operator not defiend it picks default operator
+	t1 = t2; //calls '=' operaytor //Although = operator not defiend it picks default operator
+
+	test tc1(t1); //calls copy ctr
+	//tc1(t1); compilation error
+	test tc2 = tc1; //calls copy ctr
+
+	cout<<	t1.getdata();
+
+	getchar();
+
+
+	return 0;
+}
+

@@ -1,0 +1,19 @@
+// TestCPUUsageExe.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include <iostream>
+#include <chrono>
+#include <thread>
+using namespace std;
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	for (;;)
+	{
+		this_thread::sleep_for(std::chrono::milliseconds(2000));
+		cout << "TestCPUUsageExe1.exe";
+	}
+	return 0;
+}
+

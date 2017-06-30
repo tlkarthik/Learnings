@@ -1,0 +1,59 @@
+// ContainmentAggregationC++.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "Containment.h"
+#include "Aggregation.h"
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	//CONTAINMENT
+	//this is the example for Containment.
+	//In this when a main or outer object destroys automatically contained object would destroy.
+	cout << "Enter a name for your creature: ";
+	std::string cName;
+	cin >> cName;
+	{
+		Oject cCreature(cName, Point2D(4, 7));//Internally creates innner point object
+
+		while (1)
+		{
+			cout << cCreature << endl;
+			cout << "Enter new X location for creature (-1 to quit): ";
+			int nX = 0;
+			cin >> nX;
+			if (nX == -1)
+				break;
+
+			cout << "Enter new Y location for creature (-1 to quit): ";
+			int nY = 0;
+			cin >> nY;
+			if (nY == -1)
+				break;
+
+			cCreature.move_to(nX, nY);
+		}
+	}
+	//by the time Creature object is detroyed point2d object will also destro.
+	//try to coprrelate with car and car parts destroy concept.
+	//car is destroyed ==> all engine, body etc are destroyed
+
+	//AGGREGATION
+	{
+		{
+			Agg_Point2D *pnt = new Agg_Point2D(123,546);
+			{
+				Agg_Oject("fghjk", *pnt);
+			}
+			if (pnt)
+				cout << "pnt is full \n"; //this aggregation
+			else
+				cout << "pnt is null \n"; //woiuld have been containment
+		}
+	}
+	
+	//by the time agg_object comes out ,m agg_object is destroyed but point2d is aliove.
+	//they are independednt. Hence aggregation acieved.
+	return 0;
+}
+

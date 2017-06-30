@@ -1,0 +1,44 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Delegate
+{
+    public class BroadCast
+    {
+        public void ViaMessage()
+        {
+            Console.WriteLine("Message Send to mobile.");
+        }
+
+        public void ViaEmail()
+        {
+            Console.WriteLine("Email send to mailbox.");
+        }
+
+        public void ViaFax()
+        {
+            Console.WriteLine("Message send via fax.");
+        }
+    }
+
+    public class DelegateDemo3
+    {
+        delegate void SendMessage();
+        delegate int sqrt(int[] i);
+        public static void Main(string[] args)
+        {
+
+           int[] fibNum = {-20,-24,-28,0, 1, 1, 2, 3, 5, 8, 13, 21, 34,32,36,40 };
+           var a =fibNum.Where( x=>x%2!=0).Skip(2).ToList();
+           var ad = fibNum.SkipWhile(l => l % 2 != 0).Where(x =>x/4==0) .ToList();
+           var aq = fibNum.Where(l => l % 2 != 0).ToList();
+            //aq.SkipWhile()
+            Console.Write(a);
+            //.ReadLine();
+
+        }
+    }
+}

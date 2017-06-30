@@ -1,0 +1,72 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ChangeExtensions
+{
+    public partial class Form1 : Form
+    {
+        string[] files;
+        public Form1()
+        {
+            InitializeComponent();
+            listBox1.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            string Folder_Path = @"E:\karthik\Learnings";
+            folderBrowserDialog1.SelectedPath = Folder_Path;
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK){
+                 files = Directory.GetFiles(folderBrowserDialog1.SelectedPath, "*.*", System.IO.SearchOption.AllDirectories);
+                List<string>extension = new List<string>();
+                foreach (var file in files)
+                    extension.Add(Path.GetExtension(file));
+
+              extension=  extension.Distinct().ToList();
+              listBox1.DataSource = extension;
+              button1.Enabled = false;
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            int i = 0;
+            try {
+                 if (listBox1.SelectedIndex != -1){
+                string[] SelectedExtensions = listBox1.SelectedItems.OfType<string>().ToArray();
+                foreach (string file in files)  {
+                   if (SelectedExtensions.Contains(Path.GetExtension(file))){
+                       string DirName = Path.GetFileName(Path.GetDirectoryName(file));
+                       string newFileLoc_temp = @"E:\karthik\Learnings\Learnings\" + DirName + "_" + Path.GetFileNameWithoutExtension(file) + ".txt";
+                       string newFileLoc = @"E:\karthik\Learnings\Learnings\" + DirName + "_" + Path.GetFileName(file);
+                       if (!File.Exists(newFileLoc_temp))
+                       {
+                           File.Copy(file, newFileLoc);
+                           var result = Path.ChangeExtension(newFileLoc, ".txt");
+                           File.Move(newFileLoc, Path.ChangeExtension(newFileLoc, ".txt"));
+                           i++;
+                       }
+                    }
+                }
+            }
+             button1.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("arrey tlk " + ex.Message);
+                //throw;
+            }
+            MessageBox.Show("arrey tlk- Sccessfull = " + i.ToString()+" Files." );
+        }
+    }
+    
+}

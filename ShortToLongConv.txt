@@ -1,0 +1,36 @@
+// ShortToLongConv.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "ShortToLongConv.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+
+using namespace std;
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	int nRetCode = 0;
+
+	
+	CString csGlobal_id = _T("32767");
+	short pParentShort[4]/* = reinterpret_cast<short *>(&v)*/;
+	_stscanf_s(csGlobal_id.GetString(), _T(" %hd,%hd,%hd,%hd"),
+		&pParentShort[0],
+		&pParentShort[1],
+		&pParentShort[2],
+		&pParentShort[3]);
+	__int64 i64Val_globalID = *reinterpret_cast<__int64 *>(pParentShort);
+
+
+
+
+	return nRetCode;
+}

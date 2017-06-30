@@ -1,0 +1,72 @@
+using namespace std;
+#include <iostream>
+#include <string>
+
+class Point2D
+{
+public:
+	Point2D() : x{ 0 }, y{ 0 }{};
+	Point2D(int a, int b) : x{ a }, y{b}{};
+
+	friend std::ostream & operator<<(ostream &out,const Point2D &p)
+	{
+		out << "X : " << p.GetX() << " and Y : " <<p.GetY();
+		return out;
+	}
+	void set_point(int a,int b)
+	{
+		this->x = a;
+		this->y = b;
+	}
+
+	int GetX() const { return x; }
+	int GetY() const { return y; }
+	~Point2D()
+	{
+		cout << "\nPoint2D is ddestroyed\n";
+	}
+private:
+	int x, y;
+};
+
+class Oject
+{
+public:
+	Oject() = delete;
+	Oject( string N, Point2D &objPoint) : name(N), obj_point{ objPoint }{};
+
+	friend std::ostream & operator<<(ostream &out, const Oject &oject)
+	{
+		out << "\nName is : " << oject.name << " and its location : " << oject.obj_point;
+		return out;
+	}
+	void move_to(int x, int y)
+	{
+		obj_point.set_point(x, y);
+	}
+	~Oject()
+	{
+		cout << "\n Oject is destroyed \n";
+	}
+private:
+	string name;
+	Point2D obj_point;
+};
+
+class Opera_Test
+{
+public:
+	Opera_Test(){
+		name = "DFGHJKL";
+	};
+	
+
+	friend std::ostream &operator<<(ostream &out, const Opera_Test& s)
+	{
+		out << s.name;
+		return  out;
+	}
+
+private:
+	string name;
+};

@@ -1,0 +1,65 @@
+// ConsoleApplication1.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+#include "ConsoleApplication1.h"
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#endif
+
+
+// The one and only application object
+
+CWinApp theApp;
+#include <vector>
+#include <set>
+#include <algorithm>
+#include <tuple>
+#include <Windows.h>
+using namespace std;
+
+int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
+{
+	CString delimiter = _T(",");
+	CString csElement_uid = _T("GlobalId,COG_X,CreationDate,Application Identifier,ObjectType,Description,CreationDate,CreationDate,Identifier,last");
+	if (!csElement_uid.IsEmpty())
+	{
+		int pos = 0;
+		CString token = csElement_uid.Tokenize(_T(","), pos);
+		vector<CString> vUIDs;
+		vector<CString> v;
+		while (!token.IsEmpty())
+		{
+			vUIDs.emplace_back(token);
+			token = csElement_uid.Tokenize(delimiter, pos);
+		}
+		int equal_pos = 0;
+		CString nID_oID = _T("123456 = a");
+		CString nid = nID_oID.Tokenize(_T("="), equal_pos);
+		CString oid = nID_oID.Mid(equal_pos);
+
+		
+
+		//replace(v.begin(), v.end(), 1, 2);
+		CString s{ _T("last") }, t{ _T("ideeee") };
+		//replace(vUIDs.begin(), vUIDs.end(), s.Trim(), t);
+		//int post = find(vUIDs.begin(), vUIDs.end(), s) - vUIDs.begin();
+		//vUIDs[post] = t;
+
+		auto it = std::find(vUIDs.begin(), vUIDs.end(), s);
+		if (it <vUIDs.end())
+		{
+			auto index = std::distance(vUIDs.begin(), it);
+			vUIDs[index] = t;
+		}
+
+		CString append;
+		if (9 == vUIDs.size()){
+			for_each(vUIDs.begin(), vUIDs.end(), [&](CString & itr){append.Append(itr + _T("#")); });
+			vUIDs.clear();
+		}
+	}
+
+	return 0;
+}

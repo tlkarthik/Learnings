@@ -1,0 +1,79 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Threading;
+
+namespace Threadsin_Graphics
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        Random rdm;
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Thread th1 = new Thread(thread1);
+            th1.Start();
+        }
+        private void thread1()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                Pen pen = new Pen(Brushes.SpringGreen, 4);
+                int x = rdm.Next(0, this.Width);
+                int y = rdm.Next(0, this.Height);
+                Rectangle rectangle = new Rectangle(x, y, 20, 20);
+                this.CreateGraphics().DrawRectangle(pen, rectangle);
+
+                Thread.Sleep(100);
+            }
+            MessageBox.Show("Red complete");
+        }
+        private void thread2()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                Brush brush = new SolidBrush(Color.Blue);
+                Pen pen = new Pen(brush);
+                int x = rdm.Next(0, this.Width);
+                int y = rdm.Next(0, this.Height);
+
+                Rectangle rectangle = new Rectangle(x, y, 100, 200);
+                this.CreateGraphics().DrawRectangle(pen, rectangle);
+
+                //Rectangle[] rectangles = new Rectangle[3];
+                //rectangles[0] = new Rectangle(x, y, 100, 200);
+                //rectangles[1] = new Rectangle(x, y, 75, 175);
+                //rectangles[2] = new Rectangle(x, y, 50, 150);
+                //this.CreateGraphics().DrawRectangles(pen, rectangles);
+                //Point[] points = new Point[4];
+                //points[0] = new Point(x+10,y+20);
+                //points[1] = new Point(x + 20, y + 30);
+                //this.CreateGraphics().DrawPolygon(pen, points);
+
+                Thread.Sleep(100);
+            }
+            MessageBox.Show("Blue complete");
+        }
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Thread th2 = new Thread(thread2);
+            th2.Start();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            rdm = new Random();
+        }
+
+    }
+}

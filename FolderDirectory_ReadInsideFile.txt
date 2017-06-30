@@ -1,0 +1,34 @@
+﻿using System.Collections.Generic;
+using System.IO;
+using Excel = Microsoft.Office.Interop.Excel;
+
+namespace FolderDirectory
+{
+    public class ReadInsideFile
+    {
+        public string FindInSQLFiles(string searchString, Dictionary<string, string> sqlFullFilePaths)
+        {
+            string foundFileNames= "";
+
+            foreach (var file in sqlFullFilePaths)
+            {
+                using (StreamReader streamReader = new StreamReader(file.Key))
+                {
+                    while (!(streamReader.EndOfStream))
+                    {
+                        var line = streamReader.ReadLine();
+                        if (line.Contains(searchString))
+                        {
+                            foundFileNames = foundFileNames + file.Value + " , ";
+                        }
+                    }
+                }
+            }
+
+            if (foundFileNames.Length > 3)
+                return foundFileNames.Substring(0, foundFileNames.Length - 3);
+            else
+                return foundFileNames;
+        }
+    }
+}

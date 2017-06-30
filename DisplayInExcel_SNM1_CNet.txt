@@ -1,0 +1,241 @@
+using System;
+using Ingr.SP3D.Common.Middle.Services.Hidden;
+using Ingr.SP3D.PrjMgmt.Services.SMOUtils;
+using System.Collections;
+using System.Data;
+using Excel = Microsoft.Office.Interop.Excel;
+using System.Reflection;
+using System.Windows.Forms;
+
+namespace TLK
+{
+    
+    class Program
+    {
+        class Junk
+        {
+             int rowCount = 3;
+             int colCount = 3;
+
+            //string ServerName;
+            public ArrayList CDBs = new ArrayList();
+            public ArrayList Schemas = new ArrayList();
+
+            public void ListDBsandSchemas(string ServerName)
+            {
+                try
+                {
+                    SP3DSMOUtils oUtils = new SP3DSMOUtils();
+                    string[] ListofDbs = oUtils.GetDatabases(ServerName);
+                    foreach (string Db in ListofDbs)
+                    {
+                        bool bCatalogDB;
+
+                        if (bCatalogDB = oUtils.IsCatalogDatabase(ServerName, Db))
+                        {
+                            CDBs.Add(Db);
+                        }
+                        else if (bCatalogDB = oUtils.IsMetadataDatabase(ServerName,Db))
+                        {
+                            Schemas.Add(Db);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show("Error in Displaying  DBs", e.Message);
+                }
+            }
+
+            public void ExecuteQueryAndDisplayinExcel(string ServerName, string DataBase, string Query,Excel.Application oXL, String worksheetName,Excel.Workbook oWB, String FilePath)
+            {
+                try
+                {
+                    
+                    Excel.Worksheet oSheet=null;
+                    Excel.Sheets oss;
+                    Excel.Range oRange;
+                    
+                    oss = (Excel.Sheets)oWB.Sheets;
+                    oSheet = (Excel.Worksheet)oss.Add(oss[1], Type.Missing, Type.Missing, Type.Missing);
+                    oSheet.Name = worksheetName;
+
+                    SQLDBConnection SQLDB = new SQLDBConnection(ServerName, DataBase);
+                    
+                        DataTable oDBtable = SQLDB.ExecuteSelectQuery(Query);
+                        if (oDBtable != null)
+                        {
+                            foreach (DataColumn oDC in oDBtable.Columns)
+                            {
+                                oSheet.Cells[rowCount, colCount] = oDC.ColumnName;
+
+                                rowCount = rowCount + 1;
+                                foreach (DataRow oDataRow in oDBtable.Rows)
+                                {
+                                    rowCount = rowCount + 1;
+                                    oSheet.Cells[rowCount, colCount] = oDataRow[oDC.ColumnName].ToString();
+                                }
+
+                                colCount = colCount + 1;
+                                rowCount = 3;
+                            }
+
+                            string[] ExcelCols = { "C3", "D4", "E5", "F6", "G7", "H8", "I9", "J10", "K11", "L12" };
+                            int i = 0;
+                            do
+                            {
+                                oRange = oSheet.Range[ExcelCols[i]];
+                                oRange.EntireColumn.AutoFit();
+                                oRange.Style();
+                                i++;
+                            } while ((i == (colCount-3)) || (i<9));
+
+                            
+                            oSheet = null;
+                            oRange = null;
+                            oWB.SaveAs(FilePath, Excel.XlFileFormat.xlWorkbookNormal,
+                                        System.Reflection.Missing.Value, Missing.Value, Missing.Value, Missing.Value,
+                                        Excel.XlSaveAsAccessMode.xlExclusive,
+                                        Missing.Value, Missing.Value, Missing.Value,
+                                        Missing.Value, Missing.Value);
+                            //oWB.Save();
+                            //oWB.Close();
+                            //oXL.Quit();
+                        }
+                    
+                }
+                catch (Exception e)
+                {
+                        MessageBox.Show(" Message from Excel method  " + e.Message); ;
+                }
+                
+            }
+
+            public string GetCatalogDb(string site, string ServerName, string MDB)
+            {
+                SQLDBConnection forcatalog = new SQLDBConnection(ServerName, site);
+                string Query = @"SELECT db.path FROM JDatabase db JOIN XDatabaseForCatalog rdbm ON 
+                                rdbm.oiddestination = db.oid Join JProjectRoot pr on pr.oid = rdbm.oidorigin
+                                where UPPER(pr.name) =UPPER('"+MDB+"')";
+                string CatalogDb = "";
+                DataTable oDBtable = forcatalog.ExecuteSelectQuery(Query);
+                if (oDBtable != null)
+                {
+                    foreach (DataRow oDataRow in oDBtable.Rows)
+                    {
+                        CatalogDb = oDataRow["path"].ToString();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Query didnt work");
+
+                }
+
+                return CatalogDb;
+            }
+
+        }
+
+
+        static void Main(string[] args)
+        {
+
+            string ServerName = "GCI258962";
+             //GCI258962
+
+            Junk o = new Junk();
+            o.ListDBsandSchemas(ServerName);
+
+            foreach (string s in o.CDBs)
+            {
+                Console.WriteLine(s);
+            }
+            foreach (string s in o.Schemas)
+            {
+                Console.WriteLine(s);
+            }
+
+            Console.WriteLine("Enter the Db Name ");
+            string DB = Console.ReadLine();
+
+
+            
+
+            string filepath = "C:\\Temp\\tlk.xls";
+
+
+            //string General_Query = "SELECT a.Name,a.PartClassType,a.DatabaseType,a.oid FROM REFDATPartClass a";
+
+
+            string PartClass_Schema_Query = @"declare @Temp table (DBViewNames  VARCHAR(100) ,PartClassNames VARCHAR(100))  
+                                             begin 
+                                            insert into @Temp 
+                                              select distinct ViewNames, PartClass from ( 
+                                              select jdv.DBViewName ViewNames, 
+	                                             case left(jdv.DBViewName,5) 
+		                                             when 'CUCMP' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUCSH' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUSDT' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUSMF' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUSPS' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		                                             when 'CUUDP' then SUBSTRING(jdv.DBViewName,6,(LEN(jdv.DBViewName)-5)) 
+		 
+	                                             else  
+		                                            case left(jdv.DBViewName,4) when 'CUSS'  then SUBSTRING(jdv.DBViewName,5,(LEN(jdv.DBViewName)-4)) 
+												                                            else jdv.DBViewName end 
+                                             end  
+                                             PartClass from IJDBView jdv 
+                                            join ClassInfoView civ on civ.oid = jdv.oid 
+                                            join IJClassDef cd on cd.oid = civ.oid 
+                                            join JClass_Implements_JInterfaces jcji on jcji.oidOrg = cd.oid 
+                                            join IJNamedObject jno on jno.oid = jcji.oidDst and cd.oid not in ( select oid from IJPackageMember)  where      
+                                            len(jdv.DBViewName) >30  ) as c order by ViewNames 
+
+                                            select distinct 
+	                                            case RIGHT(PartClassNames,2) 
+	                                             when 'OV' then SUBSTRING(PartClassNames,1,(LEN(PartClassNames)-2)) 
+	                                             else 
+		                                            case RIGHT(PartClassNames,1)  when 'V' then SUBSTRING(PartClassNames,1,(LEN(PartClassNames)-1)) 
+		                                            else PartClassNames end	 
+	                                             end  PartClassNames  from @Temp 
+                                            end ";
+
+            string Attributes_query = @"select  distinct jdc.DBColumnName from IJDBColumn jdc
+                                        join IJNamedObject jno on jno.oid = jdc.oid 
+                                        join AttributeInfoView attr on attr.oid = jno.oid
+                                        join IJAdminInfo ad on ad.oid = attr.oid 
+                                        where len(jdc.DBColumnName) > 30 and ad.UserFlags = 2 ";
+
+            string CustomInterface_query = @"select distinct jdv.DBViewName from IJNamedObject jno 
+                                            join JClass_Implements_JInterfaces jcji on jcji.oidOrg = jno.oid
+                                            join IJDBView jdv on jdv.oid = jcji.oidDst where  len(jdv.DBViewName) > 30 and jdv.DBViewName like 'JUA%'";
+
+
+            Excel.Application oXL =null;
+            Excel.Workbook oWB=null;
+            oXL = new Excel.Application();
+
+            oXL.Visible = true;
+            oXL.DisplayAlerts = false;
+            oWB = oXL.Workbooks.Add(Microsoft.Office.Interop.Excel.XlSheetType.xlWorksheet);
+
+            //string cat = o.GetCatalogDb("GCI258962_SDB", ServerName, DB);
+            //Console.WriteLine(cat);
+
+            //o.ExecuteQueryAndDisplayinExcel(ServerName, DB, General_Query, oXL, "General", oWB, filepath);
+            o.ExecuteQueryAndDisplayinExcel(ServerName, DB + "_SCHEMA", PartClass_Schema_Query, oXL, "30CharPC", oWB, filepath);
+            o.ExecuteQueryAndDisplayinExcel(ServerName, DB + "_SCHEMA", CustomInterface_query, oXL, "CustomInterfaces", oWB, filepath);
+            o.ExecuteQueryAndDisplayinExcel(ServerName, DB + "_SCHEMA", Attributes_query, oXL, "Attributes", oWB, filepath);
+
+
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+            
+        }
+
+        
+    }
+}

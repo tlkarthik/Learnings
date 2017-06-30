@@ -1,0 +1,17 @@
+// TestForDLLExportClient.cpp : Defines the entry point for the console application.
+//
+
+#include "stdafx.h"
+//#include "E:\karthik\Campus201\COM\Solutions\Labs\Lab # 2\MathDLL\Debug\MathDLL.dll"
+#include "Circle.h"
+//#import "E:\karthik\Campus201\COM\Solutions\Labs\Lab # 2\MathDLL\Debug\MathDLL.dll"
+#define DllImport   __declspec( dllimport )
+int _tmain(int argc, _TCHAR* argv[])
+{
+	Circle c;
+	c.SetRadius(123);
+	c.GetArea();
+	getchar();
+	return 0;
+}
+

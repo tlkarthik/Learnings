@@ -4,7 +4,11 @@ using namespace std;
 
 class Agg_Point2D
 {
+<<<<<<< HEAD
 // just testing the junk stuff
+=======
+//integrate1
+>>>>>>> 4461046b54baa434721a898b6025e3d3ac19defd
 public:
 	Agg_Point2D() : x{ 0 }, y{ 0 }{};
 	Agg_Point2D(int a, int b) : x{ a }, y{ b }{};

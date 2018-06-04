@@ -4,6 +4,7 @@ using namespace std;
 
 class Agg_Point2D
 {
+// just testing the junk stuff
 public:
 	Agg_Point2D() : x{ 0 }, y{ 0 }{};
 	Agg_Point2D(int a, int b) : x{ a }, y{ b }{};
